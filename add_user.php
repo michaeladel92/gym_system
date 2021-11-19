@@ -5,7 +5,6 @@
 
 
   // get role id
-
   $sql        = "SELECT `id` FROM `roles`";
   $role_id_query = mysqli_query($conn,$sql); 
   while($role_ids = mysqli_fetch_assoc($role_id_query)){
@@ -16,8 +15,6 @@
 if($_SERVER['REQUEST_METHOD'] === "POST"){
     if(isset($_POST['new_agent'])){
       $messages    = [];
-     
-
       $name  = clean($_POST['name'],'string');
       $email = clean($_POST['email'],'email');
       $role  = clean($_POST['role'],'num');
