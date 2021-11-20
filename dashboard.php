@@ -21,8 +21,59 @@
  
 
 ?>
+
+<style>
+.box-container,.box-container .box{
+  display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.box-container .box{
+ flex-direction:column; 
+}
+.box-container .box:first-child{
+  background-color:#ffadad;
+}
+.box-container .box:nth-of-type(2){
+  background-color:#ffd6a5;
+}
+.box-container .box:nth-of-type(3){
+  background-color:#fdffb6;
+}
+.box-container .box{
+  background: red;
+    padding: 1rem;
+    width: 14rem;
+    height: 12rem;
+    text-align: center;
+    border-radius: 2rem;
+    color: #4a4a4a;
+    margin: 1rem;
+}
+.box-container .box .numbers{
+  font-size:3rem
+}
+</style>
+
  <div class="container mt-5">
- <?php if( isset($_SESSION['message'])){displayMessage();}?>
+   <!-- boxis -->
+   <div class="box-container">
+      <div class="box">
+        <h3>users</h3>
+        <h2 class="numbers">8</h2>
+      </div>
+      <div class="box">
+        <h3>Membership</h3>
+        <h2 class="numbers">8</h2>
+      </div>
+      <div class="box">
+        <h3>New Members</h3>
+        <h2 class="numbers">8</h2>
+      </div>
+   </div>
+   
+   <!-- users table -->
+   <?php if( isset($_SESSION['message'])){displayMessage();}?>
  <table class="table">
       <thead class="thead-dark">
         <tr>
@@ -32,6 +83,7 @@
           <th scope="col">status </th>
           <th scope="col">password </th>
           <th scope="col">role </th>
+          <th scope="col">Latest Action </th>
           <th scope="col">options </th>
         </tr>
       </thead>
@@ -44,6 +96,7 @@
               <td><?= (intval($userLists['status']) === 1 ? 'Active' : 'De-activate') ?></td>
               <td><?= (intval($userLists['is_approved']) === 1 ? 'changed' : 'pending') ?></td>
               <td><?=$userLists['role']?></td>
+              <td><?=$userLists['action_id']?></td>
               <td>
                 <a href="edit_user.php?id=<?=base64_encode($userLists['id'])?>" type="button" class="btn btn-dark">Edit</a>
               </td>
@@ -53,6 +106,8 @@
 
       </tbody>
     </table>
+
+    
 </div>
 
 <?php

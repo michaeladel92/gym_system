@@ -2,6 +2,23 @@
 require_once("init.php");
 
 
+/*==============
+sql Querys
+==============*/ 
+
+// role ids in array
+function roleArray(){
+  global $conn;
+  $sql            = "SELECT `id` FROM `roles`";
+  $role_id_query  = mysqli_query($conn,$sql); 
+  while($role_ids = mysqli_fetch_assoc($role_id_query)){
+    $role_id_array[] = $role_ids['id'];
+  }
+  return $role_id_array;
+}
+
+
+
 
 // clean all
 function clean($inputValue,$check){
@@ -42,6 +59,9 @@ function validate($input,$flag,$length = 6){
       case"empty":
                 if(empty($input)){$status = false;}
         break;
+      case"empty_2":
+          if($input === ''){$status = false;}
+        break;
       case "email":
                 if(!filter_var($input,FILTER_VALIDATE_EMAIL)){$status = false;}
         break;  
@@ -53,6 +73,9 @@ function validate($input,$flag,$length = 6){
         break;
       case "max":
           if(strlen($input) > $length){$status = false;}   
+        break;
+      case "phone":
+          if(strlen($input) !== $length){$status = false;}   
         break;
       case "num":
           if(!filter_var($input,FILTER_VALIDATE_INT)){$status = false;}   

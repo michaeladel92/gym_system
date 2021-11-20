@@ -3,16 +3,6 @@
   require_once("inc/nav.php");
 
 
-function roleArray(){
-  global $conn;
-  $sql            = "SELECT `id` FROM `roles`";
-  $role_id_query  = mysqli_query($conn,$sql); 
-  while($role_ids = mysqli_fetch_assoc($role_id_query)){
-    $role_id_array[] = $role_ids['id'];
-  }
-  return $role_id_array;
-}
-
   // get id
   if(!isset($_GET['id']) || $_GET['id'] === ''){
     setMessage('Access Denied!','danger');
@@ -50,10 +40,12 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
       $email     = clean($_POST['email'],'email');
       $role      = clean($_POST['role'],'num');
       $status    = clean($_POST['status'],'num');
+      $status    = intval($status);
       $password  = cleanPassword($_POST['password']);
       $con_pass  = cleanPassword($_POST['con_pass']);
       $max       = 40;
       $min       = 3;
+
           //validate name
         if(!validate($name,'empty')){
           $messages[] = 'Please Enter full Name!';  
@@ -96,12 +88,11 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           $messages[] = 'Oops, Something went Wrong, Please try again!';  
         }
          // validate status
-         elseif(!validate($status,'empty')){
+         elseif(!validate($status,'empty_2')){
+           echo gettype($status);
           $messages[] = 'Please Choose Status!';  
         }
-        elseif(!validate($status,'num')){
-          $messages[] = 'Oops, Something went Wrong, Please try again!';  
-        }elseif(!in_array($status,[0,1])){
+        elseif(!in_array($status,[0,1])){
           $messages[] = 'Oops, Something went Wrong, Please try again!';  
         }
 
@@ -134,17 +125,16 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
               }
               $sql .= "`role_id` = {$role},`status` = {$status},`is_approved` = 1,`action_id` = 0 ";
               $sql .= " WHERE `id` = {$userRow['id']}";
-                                       
-                    echo $sql;                    
+                                                        
                                       
-              // $query_user = mysqli_query($conn,$sql);
-              // if($query_user){
-              //   setMessage("User Added Successfully!",'success');
-              //   redirectHeader('edit_user.php?id=NA=='); 
-              // }else{
-              //   $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
+              $query_user = mysqli_query($conn,$sql);
+              if($query_user){
+                setMessage("User Updated Successfully!",'success');
+                redirectHeader('dashboard.php'); 
+              }else{
+                $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
 
-              // }
+              }
           }
         }
     }

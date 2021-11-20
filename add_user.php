@@ -3,14 +3,6 @@
   require_once("inc/nav.php");
   
 
-
-  // get role id
-  $sql        = "SELECT `id` FROM `roles`";
-  $role_id_query = mysqli_query($conn,$sql); 
-  while($role_ids = mysqli_fetch_assoc($role_id_query)){
-    $role_id_array[] = $role_ids['id'];
-  }
-
   $notifications = [];
 if($_SERVER['REQUEST_METHOD'] === "POST"){
     if(isset($_POST['new_agent'])){
@@ -47,7 +39,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
         // validate role
         elseif(!validate($role,'num')){
           $messages[] = 'Oops, Something went Wrong, Please try again!';  
-        }elseif(!in_array($role,$role_id_array)){
+        }elseif(!in_array($role,roleArray())){
           $messages[] = 'Oops, Something went Wrong, Please try again!';  
         }
 
