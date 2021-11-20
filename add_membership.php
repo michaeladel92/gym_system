@@ -20,21 +20,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
       $max         = 40;
       $min         = 3;
       $subscribtionArr = ["+1 Day","+1 Month","+2 Month","+3 Month","+4 Month","+5 Month","+6 Month","+7 Month","+8 Month","+9 Month","+10 Month","+11 Month","+1 Year","+2 Year"];
-// echo date("Y-m-d G:i:s",strtotime('2021-09-01 10:23:11'));
-      // if(in_array($subscribe,$subscribtionArr)){
-      //  echo date("Y-m-d G:i:s",strtotime($subscribe . $currentTime));
-
-      // }else{
-        echo $subscribe;
-      }
-      // echo $name . "<br>";
-      // echo $phone . "<br>";
-      // echo $start_date . "<br>";
-      // echo $end_date . "<br>";
-      // echo $subscribe . "<br>";
-      // echo $price  . "<br>";
-      // echo $bill . "<br>";
-      die;
+    
           //validate name
         if(!validate($name,'empty')){
           $messages[] = 'Please Enter full Member Name!';  
@@ -81,7 +67,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
         // validate bill
         elseif(!validate($bill,'empty')){
           $messages[] = 'Please Enter Bill Code!';  
-        }elseif(!validate($bill,'max',99999)){
+        }elseif(!validate($bill,'max',$max)){
           $messages[] = 'Maximum Accepted Price per Subscribtion is 99,999LE!';  
         }
 
@@ -92,34 +78,62 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           foreach($messages as $msg){
             $notifications[] = "<div class='alert alert-danger' role='alert'>$msg</div>";
           }
-        }else{
-
+        }
+        else{
+          
           // check if email exist in db
-          $sql = "SELECT `email` FROM `users` WHERE `email` = '{$email}'";
-          $query_check_email = mysqli_query($conn,$sql);
-          $count = mysqli_num_rows($query_check_email);
+          $sql = "SELECT `phone` FROM `membership_info` WHERE `phone` = '{$phone}'";
+          $query_check_phone = mysqli_query($conn,$sql);
+          $count = mysqli_num_rows($query_check_phone);
 
           if($count > 0){
-            $notifications[] = "<div class='alert alert-danger' role='alert'>Email already Exist!</div>";
+            $notifications[] = "<div class='alert alert-danger' role='alert'>Phone already Exist!</div>";
           }else{
-              // random Number Generator
-              $sql         = "SELECT `agent_code` FROM `users`";
-              $existCodes  = mysqli_query($conn,$sql); 
-              while($codes = mysqli_fetch_assoc($existCodes)){
-                $arr_code[] = $codes['agent_code'];
+              // Adjust date and time
+              $final_start_date = '';
+              $final_end_date   = '';
+              if(validate($start_date,'empty')){
+                  $final_start_date = date("Y-m-d G:i:s",strtotime($start_date.' '.$currentTime));
+                  $final_end_date   = date("Y-m-d G:i:s",strtotime($end_date.' '.$currentTime));
+              }else{
+                $final_start_date = date("Y-m-d G:i:s",strtotime('now'.' '.$currentTime));
+                $final_end_date   = date("Y-m-d G:i:s",strtotime($subscribe.' '.$currentTime));
               }
-            
-              do {$rand = rand(1000, 9999);} 
-              while(in_array($rand, $arr_code));
-              $password = password_hash($rand , PASSWORD_BCRYPT, ['cost' => 12]);
+                  
+              $today = date("Y-m-d G:i:s",strtotime('now'.' '.$currentTime)); 
+              $user_test_id = 1;
 
-              //INSERT
-              $sql = "INSERT INTO `users` (`full_name`,`agent_code`,`email`,`password`,`role_id`)";
-              $sql .= "VALUES('{$name}','{$rand}','{$email}','{$password}','{$role}')";
-              $query_user = mysqli_query($conn,$sql);
-              if($query_user){
-                setMessage("User Added Successfully!",'success');
-                redirectHeader('add_user.php'); 
+              // INSERT MemberInfo
+              $sql = "INSERT INTO `membership_info` (`full_name`,`phone`) ";
+              $sql .= "VALUES('{$name}','{$phone}')";
+              $query_member_info = mysqli_query($conn,$sql);
+              if($query_member_info){
+                  $member_info_id = intval(mysqli_insert_id($conn));
+                  //INSERT membership_user
+                  $sql = "INSERT INTO `member_user` (`user_id`,`member_id`) ";
+                  $sql .= "VALUES({$user_test_id},{$member_info_id})";
+                  $query_member_user = mysqli_query($conn,$sql);
+                  if($query_member_user){
+                      $member_user_table_id = intval(mysqli_insert_id($conn));
+                      //INSERT membership_track
+                      $sql = "INSERT INTO `membership_track` (`price`,`bill`,`start_date`,`end_date`,`user_id`,`member_id`,`updated_at`) ";
+                      $sql .= "VALUES({$price},'{$bill}','{$final_start_date}','{$final_end_date}',{$user_test_id},{$member_info_id},'{$today}')";
+                      $query_member_track = mysqli_query($conn,$sql);
+                      if($query_member_track){
+                            setMessage("Member Added Successfully!",'success');
+                            redirectHeader('add_membership.php'); 
+                      }else{
+                        $sql = "DELETE FROM `membership_track` WHERE `id` = {$member_user_table_id} LIMIT 1";
+                        mysqli_query($conn,$sql);
+                        $sql = "DELETE FROM `membership_info` WHERE `id` = {$member_info_id} LIMIT 1";
+                        mysqli_query($conn,$sql);
+                        $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
+                      }
+                  }else{
+                    $sql = "DELETE FROM `membership_info` WHERE `id` = {$member_info_id} LIMIT 1";
+                    mysqli_query($conn,$sql);
+                    $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
+                  }  
               }else{
                 $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
 
@@ -127,7 +141,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           }
         }
     }
-}
+}  
 
 
 ?>
@@ -198,15 +212,13 @@ input[type=number] {
             <!-- price -->
             <label for="inputState">Price</label>
             <input type="number" name="price" class="form-control"  
-            <?= isset($_POST['price']) ? $_POST['price'] : '' ?>
-            >
+            value="<?= isset($_POST['price']) ? $_POST['price'] : '' ?>">
           </div>
           <div class="form-group col-md-3">
             <!-- bill -->
             <label for="inputState">bill</label>
             <input type="text" name="bill" class="form-control"
-            <?= isset($_POST['bill']) ? $_POST['bill'] : '' ?>
-            >
+            value="<?= isset($_POST['bill']) ? $_POST['bill'] : '' ?>">
           </div>
         </div>
         <?php 
@@ -215,9 +227,7 @@ input[type=number] {
           }
           // err msg
           if(count($notifications) > 0){
-            foreach($notifications as $notification){
-              echo $notification;
-            }
+              echo $notifications[0];
           }
         ?>
         <button type="submit" name="new_member" class="btn btn-info">New Member</button>
