@@ -17,6 +17,7 @@
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
             <a class="dropdown-item" href="#">Edit</a>
             <a class="dropdown-item" href="#">dashboard</a>
+            <a class="dropdown-item" href="./role_index.php">roles</a>
             <a class="dropdown-item" href="#">add agent</a>
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" href="#">logout</a>

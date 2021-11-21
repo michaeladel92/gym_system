@@ -41,6 +41,7 @@ function clean($inputValue,$check){
     case ($check === 'num'):
             $clean = filter_var($clean, FILTER_SANITIZE_NUMBER_INT);
           break;
+          
   }
   return $clean;
 }
@@ -77,6 +78,17 @@ function validate($input,$flag,$length = 6){
       case "phone":
           if(strlen($input) !== $length){$status = false;}   
         break;
+     case "string": 
+    
+          if(!preg_match('/^[a-zA-Z]*$/',$input)){
+              $status = false;
+          }
+   break;
+   case "int": 
+    if(!filter_var($input,FILTER_VALIDATE_INT)){
+        $status = false;
+    }
+    break;
       case "num":
           if(!filter_var($input,FILTER_VALIDATE_INT)){$status = false;}   
   break;  
