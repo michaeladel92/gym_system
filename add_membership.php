@@ -20,6 +20,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
       $bill        = clean($_POST['bill'],'string');
       $currentTime = date("G:i:s",strtotime('now'));
       $yesterday   = date("Y-m-d",strtotime('yesterday'));
+      $comment     = clean($_POST['comments'],'string');
       $max         = 40;
       $min         = 3;
       $subscribtionArr = ["+1 Day","+1 Month","+2 Month","+3 Month","+4 Month","+5 Month","+6 Month","+7 Month","+8 Month","+9 Month","+10 Month","+11 Month","+1 Year","+2 Year"];
@@ -73,6 +74,14 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
         }elseif(!validate($bill,'max',$max)){
           $messages[] = 'Maximum Accepted Price per Subscribtion is 99,999LE!';  
         }
+        // validate Comment
+        elseif(validate($comment,'empty')){
+          if(!validate($comment,'min',10)){
+            $messages[] = "Minimum Accepted char for Comment is 10";  
+          }elseif(!validate($comment,'max',250)){
+            $messages[] = "Maximum Accepted char for Comment is 250"; 
+          }
+        }
 
 
 
@@ -108,7 +117,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                   
               $today = date("Y-m-d G:i:s",strtotime('now'.' '.$currentTime)); 
               $sessionUserId = $_SESSION['id'];
-
+             
               // INSERT MemberInfo
               $sql = "INSERT INTO `membership_info` (`full_name`,`phone`) ";
               $sql .= "VALUES('{$name}','{$phone}')";
@@ -126,11 +135,25 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                       $sql .= "VALUES({$price},'{$bill}','{$final_start_date}','{$final_end_date}',{$sessionUserId},{$member_info_id},'{$today}')";
                       $query_member_track = mysqli_query($conn,$sql);
                       if($query_member_track){
-                            setMessage("Member Added Successfully!",'success');
-                            redirectHeader('index.php'); 
+                        // INSER Comment if available
+                            if(validate($comment,'empty')){
+                              $sql = "INSERT INTO `comments` (`comment`,`user_id`,`member_id`) ";
+                              $sql .= "VALUES ('{$comment}',{$sessionUserId},{$member_info_id})";
+                              $query_comment = mysqli_query($conn,$sql);
+                              if($query_comment){
+                                setMessage("Member Added Successfully!",'success');
+                                redirectHeader('index.php');
+                              }else{                                
+                                $sql = "DELETE FROM `membership_info` WHERE `id` = {$member_info_id} LIMIT 1";
+                                mysqli_query($conn,$sql);
+                                $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
+
+                              }
+                            }else{
+                              setMessage("Member Added Successfully!",'success');
+                              redirectHeader('index.php'); 
+                            }
                       }else{
-                        $sql = "DELETE FROM `membership_track` WHERE `id` = {$member_user_table_id} LIMIT 1";
-                        mysqli_query($conn,$sql);
                         $sql = "DELETE FROM `membership_info` WHERE `id` = {$member_info_id} LIMIT 1";
                         mysqli_query($conn,$sql);
                         $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
@@ -225,6 +248,10 @@ input[type=number] {
             <label for="inputState">bill</label>
             <input type="text" name="bill" class="form-control"
             value="<?= isset($_POST['bill']) ? $_POST['bill'] : '' ?>">
+          </div>
+          <div class="form-group col-md-12">
+            <label for="exampleFormControlTextarea1">Comment</label>
+            <textarea name="comments" class="form-control" style="resize:none;height:10rem;"><?= isset($_POST['comments']) ? $_POST['comments'] : '' ?></textarea>
           </div>
         </div>
         <?php 

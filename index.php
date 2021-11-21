@@ -41,7 +41,6 @@
 
 // Today members
 $sqlNewMembers = "SELECT `id` FROM `membership_track` WHERE `updated_at` >= CURDATE()";
-
 $newMembers = mysqli_query($conn,$sqlNewMembers);
 $countNewMembers = mysqli_num_rows($newMembers);
 ?>
@@ -109,7 +108,7 @@ $countNewMembers = mysqli_num_rows($newMembers);
       <tbody>
         <?php while($memberLists = mysqli_fetch_assoc($getMembersQuery)): ?>
             <tr>
-              <th scope="row"><a href="<?=$memberLists['id']?>"><?=$memberLists['full_name']?></a></th>
+              <th scope="row"><a href="mempership_profile.php?id=<?=base64_encode($memberLists['id'])?>"><?=$memberLists['full_name']?></a></th>
               <td><?=$memberLists['phone']?></td>
               <td><?=date("j M, Y", strtotime($memberLists['start_date']))?></td>
               <td><?=date("j M, Y", strtotime($memberLists['end_date']))?></td>
