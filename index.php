@@ -1,8 +1,10 @@
 <?php
   require("inc/init.php");
   require_once("inc/nav.php");
-  
-
+  // check if session not set
+  isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
+  // check if account is active
+  isStatusActive();
   //all get Members 
   $sql = "SELECT  
                 `membership_info`.*,
@@ -32,10 +34,15 @@
                               `membership_track`.`member_id`
                               HAVING 
                               COUNT(*) >= 1 ORDER by `membership_track`.`member_id` ASC
-                      )";
+                      ) 
+                      ORDER BY `membership_track`.`updated_at` DESC";
   $getMembersQuery = mysqli_query($conn,$sql);
   $countUsers      = mysqli_num_rows($getMembersQuery); 
 
+// Today members
+$sqlNewMembers = "SELECT `id` FROM `membership_track` WHERE `updated_at` >= CURDATE()";
+$newMembers = mysqli_query($conn,$sqlNewMembers);
+$countNewMembers = mysqli_num_rows($newMembers);
 ?>
 
 <style>
@@ -76,11 +83,11 @@
    <div class="box-container">
       <div class="box">
         <h3>Membership</h3>
-        <h2 class="numbers">8</h2>
+        <h2 class="numbers"><?=$countUsers?></h2>
       </div>
       <div class="box">
         <h3>New Members</h3>
-        <h2 class="numbers">8</h2>
+        <h2 class="numbers"><?=$countNewMembers?></h2>
       </div>
    </div>
    
@@ -101,12 +108,12 @@
       <tbody>
         <?php while($memberLists = mysqli_fetch_assoc($getMembersQuery)): ?>
             <tr>
-              <th scope="row"><a href="<?=$memberLists['id']?>"><?=$memberLists['full_name']?></a></th>
+              <th scope="row"><a href="mempership_profile.php?id=<?=base64_encode($memberLists['id'])?>"><?=$memberLists['full_name']?></a></th>
               <td><?=$memberLists['phone']?></td>
-              <td><?=$memberLists['start_date']?></td>
-              <td><?=$memberLists['end_date']?></td>
+              <td><?=date("j M, Y", strtotime($memberLists['start_date']))?></td>
+              <td><?=date("j M, Y", strtotime($memberLists['end_date']))?></td>
               <td ><?=$memberLists['agent_name'] .' ['.$memberLists['agent_code']. ']'?></td>
-              <td><?=$memberLists['updated_at']?></td>
+              <td><?=date("j M, Y - g:i a", strtotime($memberLists['updated_at']))?></td>
               <td>
                 <a href="edit_user.php?id=<?=base64_encode($memberLists['id'])?>" type="button" class="btn btn-dark">extend</a>
               </td>

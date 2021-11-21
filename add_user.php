@@ -1,7 +1,12 @@
 <?php
   require("inc/init.php");
   require_once("inc/nav.php");
-  
+    // Session not available 
+    isSessionIdNotAvailable('Please Login to procceed!','danger','login.php');
+    // check if role is admin
+    isAdmin('Access Denied!','danger','index.php');
+    // check if account is active
+    isStatusActive();
 
   $notifications = [];
 if($_SERVER['REQUEST_METHOD'] === "POST"){

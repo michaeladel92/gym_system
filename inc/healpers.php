@@ -17,7 +17,70 @@ function roleArray(){
   return $role_id_array;
 }
 
+/*==============
+SESSION Check
+==============*/ 
+// redirect to certian page if session id  set
+function isSessionIdAvailable($message,$type,$location){
+  if(isset($_SESSION['id'])){
+    setMessage($message,$type);
+    redirectHeader($location);
+  }
+}
 
+// redirect to certian page if session id not set
+function isSessionIdNotAvailable($message,$type,$location){
+  if(!isset($_SESSION['id'])){
+    setMessage($message,$type);
+    redirectHeader($location);
+  }
+}
+// check if user type is admin or not
+function isAdmin($message,$type,$location){
+  if($_SESSION['role_id'] !== 1){ // 1 id is admin
+    setMessage($message,$type);
+    redirectHeader($location);
+  }
+}
+
+ // check if user type is admin or or manager
+ function isAdminOrManager($message,$type,$location){
+  if($_SESSION['role_id'] !== 1 && $_SESSION['role_id'] !== 2){ // 1 id is admin
+    setMessage($message,$type);
+    redirectHeader($location);
+  }
+}
+
+
+// is user approved
+function isUserApproved($message,$type){
+  if($_SESSION['is_approved'] !== 1){ //didnt change password yet
+    setMessage($message,$type);
+    $location = "edit_user.php?id=". base64_encode($_SESSION['id']);
+    redirectHeader($location);
+  }
+}
+
+// is status active
+function isStatusActive(){
+  global $conn;
+  $sql   = "SELECT `status` FROM `users` WHERE `id` = {$_SESSION['id']} LIMIT 1";
+  $query = mysqli_query($conn,$sql);
+  $row   = mysqli_fetch_assoc($query);  
+
+  if(intval($row['status']) !== 1){ //Agent account not active 
+    unset($_SESSION['id']);
+    unset($_SESSION['full_name']);
+    unset($_SESSION['agent_code']);
+    unset($_SESSION['email']);
+    unset($_SESSION['status']);
+    unset($_SESSION['is_approved']);
+    unset($_SESSION['role_id']);
+
+    setMessage("Your Account has been Deactivated, please contact your Administrator ",'danger');
+    redirectHeader('login.php');
+  }
+}
 
 
 // clean all
@@ -76,7 +139,7 @@ function validate($input,$flag,$length = 6){
           if(strlen($input) > $length){$status = false;}   
         break;
       case "phone":
-          if(strlen($input) !== $length){$status = false;}   
+          if(!preg_match('/^01[0-2,5][0-9]{8}$/',$input)){$status = false;}   
         break;
      case "string": 
     
