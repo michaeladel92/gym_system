@@ -1,7 +1,13 @@
 <?php
   require("inc/init.php");
   require_once("inc/nav.php");
-  
+  // Session not available 
+  isSessionIdNotAvailable('Please Login to procceed!','danger','login.php');
+  // check if role is admin or manager
+  isAdminOrManager('Access Denied!','danger','index.php');
+  // check if account is active
+  isStatusActive();
+
 
   //all get users 
   $sql = "SELECT  
@@ -16,10 +22,6 @@
                           ";
   $getUsersQuery = mysqli_query($conn,$sql);
   $countUsers    = mysqli_num_rows($getUsersQuery);
-
-
- 
-
 ?>
 
 <style>
@@ -60,7 +62,7 @@
    <div class="box-container">
       <div class="box">
         <h3>users</h3>
-        <h2 class="numbers">8</h2>
+        <h2 class="numbers"><?=$countUsers?></h2>
       </div>
       <div class="box">
         <h3>Membership</h3>
@@ -96,7 +98,29 @@
               <td><?= (intval($userLists['status']) === 1 ? 'Active' : 'De-activate') ?></td>
               <td><?= (intval($userLists['is_approved']) === 1 ? 'changed' : 'pending') ?></td>
               <td><?=$userLists['role']?></td>
-              <td><?=$userLists['action_id']?></td>
+              <td><?php
+              if(intval($userLists['action_id']) !== 0){
+                  $sql = "SELECT 
+                                `full_name`,
+                                `agent_code`
+                                           FROM
+                                               `users`
+                                            WHERE
+                                                `id` = {$userLists['action_id']}";
+                  $userQuery = mysqli_query($conn,$sql);
+                  $count     = mysqli_num_rows($userQuery);
+                  if($count === 1){
+                    $result = mysqli_fetch_assoc($userQuery);
+                    echo $result['full_name'] ."[".$userLists['agent_code']."]"; 
+                  }else{
+                    echo "-";
+                  }                              
+              }else{
+                echo $userLists['full_name'] ."[".$result['agent_code']."]";
+              }
+              
+              
+              ?></td>
               <td>
                 <a href="edit_user.php?id=<?=base64_encode($userLists['id'])?>" type="button" class="btn btn-dark">Edit</a>
               </td>

@@ -1,12 +1,22 @@
 <?php
   require("inc/init.php");
   require_once("inc/nav.php");
-
-
+  // session not available
+  isSessionIdNotAvailable('Access Denied, please login to procceed!','danger','login.php');
+  // check if account is active
+  isStatusActive();
+  // redirect
+  $location = ($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2 ? 'dashboard.php' : 'index.php'); 
+  $sessionUserId = $_SESSION['id'];
+  //input readonly 
+  $readOnlyAttribute = ($_SESSION['role_id'] === 1  ? "" : "readonly");
+  // submit btn
+  $submitBtn = ($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2 ? "update_agent" : "update_password");
+  
   // get id
   if(!isset($_GET['id']) || $_GET['id'] === ''){
     setMessage('Access Denied!','danger');
-    redirectHeader('dashboard.php');
+    redirectHeader($location);
 
   }else{
     // decode id
@@ -15,15 +25,22 @@
 
     if(!validate($user_id,'num')){
       setMessage('Access Denied!','danger');
-      redirectHeader('dashboard.php');
+      redirectHeader($location);
     }else{
       $sql = "SELECT * FROM `users` WHERE `id` = {$user_id} LIMIT 1";
       $getUsersQuery = mysqli_query($conn,$sql);
       $count = mysqli_num_rows($getUsersQuery);
       if($count === 0){
         setMessage('Agent Not found!','danger');
-        redirectHeader('dashboard.php');
+        redirectHeader($location);
       }else{
+        // check if role not admin nor manager
+        if($_SESSION['role_id'] !== 1 && $_SESSION['role_id'] !== 2){
+          if($_SESSION['id'] !== intval($user_id)){
+            setMessage('Access Denied!','danger');
+            redirectHeader($location);
+          }
+        }
         $userRow = mysqli_fetch_assoc($getUsersQuery); 
       }
       
@@ -35,10 +52,16 @@ $notifications = [];
 if($_SERVER['REQUEST_METHOD'] === "POST"){
     // update user
     if(isset($_POST['update_agent'])){
+
+      // check if role is admin or manager
+      isAdminOrManager('Access Denied!','danger',$location);
+    
       $messages  = [];
       $name      = clean($_POST['name'],'string');
       $email     = clean($_POST['email'],'email');
-      $role      = clean($_POST['role'],'num');
+      if($_SESSION['role_id'] === 1){ //access admin only
+        $role      = clean($_POST['role'],'num');
+      }
       $status    = clean($_POST['status'],'num');
       $status    = intval($status);
       $password  = cleanPassword($_POST['password']);
@@ -78,25 +101,24 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
             $messages[] = "Password not match!"; 
           }
         }
-        // validate role
-        if(!validate($role,'empty')){
-          $messages[] = 'Please Choose Role!';  
-        }
-        elseif(!validate($role,'num')){
-          $messages[] = 'Oops, Something went Wrong, Please try again!';  
-        }elseif(!in_array($role,roleArray())){
-          $messages[] = 'Oops, Something went Wrong, Please try again!';  
-        }
+        if($_SESSION['role_id'] === 1){   //access admin only
+              // validate role
+              if(!validate($role,'empty')){
+                $messages[] = 'Please Choose Role!';  
+              }
+              elseif(!validate($role,'num')){
+                $messages[] = 'Oops, Something went Wrong, Please try again!';  
+              }elseif(!in_array($role,roleArray())){
+                $messages[] = 'Oops, Something went Wrong, Please try again!';  
+              }
+        }        
          // validate status
-         elseif(!validate($status,'empty_2')){
-           echo gettype($status);
+         if(!validate($status,'empty_2')){
           $messages[] = 'Please Choose Status!';  
         }
         elseif(!in_array($status,[0,1])){
           $messages[] = 'Oops, Something went Wrong, Please try again!';  
         }
-
-
 
         // count message
         if(count($messages) > 0){
@@ -104,7 +126,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
             $notifications[] = "<div class='alert alert-danger' role='alert'>$msg</div>";
           }
         }else{
-          
+
           // check if email exist 
           $sql = "SELECT `email` FROM `users` WHERE `email` = '{$email}' AND `id` != '{$userRow['id']}'";
           $query_check_email = mysqli_query($conn,$sql);
@@ -113,33 +135,114 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           if($count > 0){
             $notifications[] = "<div class='alert alert-danger' role='alert'>Email already Exist!</div>";
           }else{
-
-            if(validate($password,'empty')){
-              $password = password_hash($password , PASSWORD_BCRYPT, ['cost' => 12]);
-            }
-            
-              //UPDATE
-              $sql = "UPDATE `users` SET `full_name` = '{$name}',`email` = '{$email}', ";
-              if(validate($password,'empty')){
-              $sql .= "`password` = '{$password}', ";
+              
+              // Important emails that are not allowed to be changed in status nor password deactivated
+              $vipEmails = ['michaeladel1992@gmail.com','admin@admin.com'];
+              if($_SESSION['id'] !== intval($userRow['id'])){
+                if($status === 0 || validate($password,'empty')){
+                  if(in_array(strtolower($userRow['email']),$vipEmails)){
+                    setMessage("Permission Not Allowed!",'warning');
+                    redirectHeader('dashboard.php'); 
+                  }
+                }
+              }else{
+                if($status === 0 ){
+                  setMessage("Permission Not Allowed!",'warning');
+                  redirectHeader('dashboard.php'); 
+                }
               }
-              $sql .= "`role_id` = {$role},`status` = {$status},`is_approved` = 1,`action_id` = 0 ";
+
+              // VIP Roles UNDER Grade - Not Allowed
+              if($_SESSION['role_id'] === 1){
+                if(intval($role) !== 1){
+                  if(in_array(strtolower($userRow['email']),$vipEmails)){
+                    setMessage("Permission Not Allowed!",'warning');
+                    redirectHeader('dashboard.php'); 
+                  }
+                }
+              }
+              
+
+              if(validate($password,'empty')){
+                $password = password_hash($password , PASSWORD_BCRYPT, ['cost' => 12]);
+                $is_approved = ($_SESSION['id'] === intval($userRow['id']) ? 1 : 0);
+              }
+              //UPDATE
+              $sql = "UPDATE `users` SET ";
+              if($_SESSION['role_id'] === 1){ //access admin only
+              $sql .= " `full_name` = '{$name}',`email` = '{$email}', ";
+              $sql .= "`role_id` = {$role}, ";
+              }
+              if(validate($password,'empty')){
+              $sql .= "`password` = '{$password}',`is_approved` = {$is_approved}, ";
+              }
+              $sql .= "`status` = {$status},`action_id` = {$sessionUserId} ";
               $sql .= " WHERE `id` = {$userRow['id']}";
                                                         
-                                      
+                                 
               $query_user = mysqli_query($conn,$sql);
               if($query_user){
                 setMessage("User Updated Successfully!",'success');
                 redirectHeader('dashboard.php'); 
               }else{
                 $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
-
               }
           }
         }
     }
-    
+    elseif(isset($_POST['update_password'])){
+      $messages  = [];
+      $password  = cleanPassword($_POST['password']);
+      $con_pass  = cleanPassword($_POST['con_pass']);
+      $max       = 40;
+      $min       = 3;
 
+        // validate password
+        if(!validate($password,'empty')){
+          $messages[] = "Please Enter New Password";  
+        }
+        elseif(!validate($password,'min',6)){
+          $messages[] = "min. char for Password is 6";  
+        }
+        elseif(!validate($password,'max',$max)){
+          $messages[] = "max. char for Password is $max"; 
+        }
+        elseif($password !== $con_pass){
+          $messages[] = "Password not match!"; 
+        }
+
+        // count message
+        if(count($messages) > 0){
+          foreach($messages as $msg){
+            $notifications[] = "<div class='alert alert-danger' role='alert'>$msg</div>";
+          }
+        }else{
+
+              $password = password_hash($password , PASSWORD_BCRYPT, ['cost' => 12]);
+              $is_approved = ($_SESSION['id'] === intval($userRow['id']) ? 1 : 0);
+              //UPDATE PASSWORD
+              $sql = "UPDATE `users` SET `password` = '{$password}', ";
+              $sql .= "`is_approved` = {$is_approved},`action_id` = {$sessionUserId} ";
+              $sql .= " WHERE `id` = {$sessionUserId}";
+                                                        
+                                      
+              $query_user = mysqli_query($conn,$sql);
+              if($query_user){
+                unset($_SESSION['id']);
+                unset($_SESSION['full_name']);
+                unset($_SESSION['agent_code']);
+                unset($_SESSION['email']);
+                unset($_SESSION['status']);
+                unset($_SESSION['is_approved']);
+                unset($_SESSION['role_id']);
+                setMessage("Password Updated Successfully, Please log in to procceed!",'success');
+                redirectHeader('login.php'); 
+
+              }else{
+                $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
+              }
+        }
+    }
 }
 
 ?>
@@ -150,14 +253,14 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           <div class="form-group col-md-6">
             <!-- name -->
             <label for="inputEmail4">Full Name</label>
-            <!-- will use readonly attr for agents in some areas  -->
-            <input type="text" name="name" class="form-control" id="inputEmail4"  
+            <input type="text" name="name" class="form-control" id="inputEmail4" <?=$readOnlyAttribute?>  
             value="<?= isset($_POST['name']) ? $_POST['name'] : $userRow['full_name'] ?>">
           </div>
           <div class="form-group col-md-6">
             <!-- email -->
             <label for="inputPassword4">email</label>
             <input type="text" name="email" class="form-control" id="inputPassword4" 
+            <?=$readOnlyAttribute?> 
             value="<?= isset($_POST['email']) ? $_POST['email'] : $userRow['email'] ?>"
             >
           </div>
@@ -173,7 +276,8 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
             <label for="inputAddress2">Confirm password</label>
             <input type="password" name="con_pass" class="form-control" id="inputAddress2">
           </div>
-          <div class="form-group col-md-6">
+          <?php if($_SESSION['role_id'] === 2 || $_SESSION['role_id'] === 1):?>
+          <div class="form-group off <?=$_SESSION['role_id'] === 2 ? "offset-md-3" : ""?> col-md-6">
             <!-- status -->
             <label for="inputState">Status</label>
             <select id="inputState" name="status" class="form-control">
@@ -181,6 +285,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
               <option value="0" <?= (intval($userRow['status']) === 0 ? 'selected': '')?>>Deactivate</option>
             </select>
           </div>
+                    <?php if($_SESSION['role_id'] === 1): ?>
           <div class="form-group col-md-6">
             <!-- roles -->
             <label for="inputState">Role</label>
@@ -193,13 +298,18 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                   $role_array[] = $rows['id'];
                   $row_id   = $rows['id'];
                   $row_name = $rows['role'];
-                  $selected = intval($userRow['role_id']) === intval($rows['id']) ? 'selected' : ''; 
+                  $selected = intval($userRow['role_id']) === intval($row_id) ? 'selected' : ''; 
                   echo "<option value='{$row_id}' {$selected} >{$row_name}</option>
                   ";
               } 
             ?> 
             </select>
           </div>
+          <?php
+           endif; 
+            endif; 
+          
+          ?>
         </div>
         <?php 
           if( isset($_SESSION['message'])){
@@ -210,7 +320,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
            echo $notifications[0];
           }
         ?>
-        <button type="submit" name="update_agent" class="btn btn-info">Update Agent</button>
+        <button type="submit" name="<?=$submitBtn?>" class="btn btn-info">Update Agent</button>
       </form>
     </div>
 </div>
