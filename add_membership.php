@@ -6,6 +6,8 @@
   isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
   // check if account is active
   isStatusActive();
+  // did agent account approved
+  isUserApproved("Access Denied!, Please change you're password to active your Account!",'danger');
   
   $notifications = [];
 if($_SERVER['REQUEST_METHOD'] === "POST"){
@@ -100,7 +102,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
         }
         else{
          
-          // check if email exist in db
+          // check if phone exist in db
           $sql = "SELECT `phone` FROM `membership_info` WHERE `phone` = '{$phone}'";
           $query_check_phone = mysqli_query($conn,$sql);
           $count = mysqli_num_rows($query_check_phone);
@@ -108,9 +110,6 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           if($count > 0){
             $notifications[] = "<div class='alert alert-danger' role='alert'>Phone already Exist!</div>";
           }else{
-            // did agent account approved
-            isUserApproved("Access Denied!, Please change you're password to active your Account!",'danger');
-
               // Adjust date and time
               $final_start_date = '';
               $final_end_date   = '';
@@ -136,7 +135,6 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                   $sql .= "VALUES({$sessionUserId},{$member_info_id})";
                   $query_member_user = mysqli_query($conn,$sql);
                   if($query_member_user){
-                      $member_user_table_id = intval(mysqli_insert_id($conn));
                       //INSERT membership_track
                       $sql = "INSERT INTO `membership_track` (`price`,`bill`,`start_date`,`end_date`,`user_id`,`member_id`,`updated_at`) ";
                       $sql .= "VALUES({$price},'{$bill}','{$final_start_date}','{$final_end_date}',{$sessionUserId},{$member_info_id},'{$today}')";

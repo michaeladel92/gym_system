@@ -112,12 +112,10 @@
               <td ><?=$memberLists['agent_name'] .' ['.$memberLists['agent_code']. ']'?></td>
               <td><?=date("j M, Y - g:i a", strtotime($memberLists['updated_at']))?></td>
               <td>
-                <a href="edit_user.php?id=<?=base64_encode($memberLists['id'])?>" type="button" class="btn btn-dark">extend</a>
+                <a href="extend_membership.php?id=<?=base64_encode($memberLists['id'])?>" type="button" class="btn btn-dark">extend</a>
               </td>
             </tr>
         <?php endwhile; ?>
-     
-
       </tbody>
     </table>
 

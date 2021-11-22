@@ -25,6 +25,42 @@ $newMembers = mysqli_query($conn,$sqlNewMembers);
 return $countNewMembers = mysqli_num_rows($newMembers);
 }
 
+// is status active
+function isStatusActive(){
+  global $conn;
+  $sql   = "SELECT `status` FROM `users` WHERE `id` = {$_SESSION['id']} LIMIT 1";
+  $query = mysqli_query($conn,$sql);
+  $row   = mysqli_fetch_assoc($query);  
+
+  if(intval($row['status']) !== 1){ //Agent account not active 
+    unset($_SESSION['id']);
+    unset($_SESSION['full_name']);
+    unset($_SESSION['agent_code']);
+    unset($_SESSION['email']);
+    unset($_SESSION['status']);
+    unset($_SESSION['is_approved']);
+    unset($_SESSION['role_id']);
+    $host = $_SERVER['HTTP_HOST'];
+    $path = "http://$host/gym/login.php";
+    setMessage("Your Account has been Deactivated, please contact your Administrator ",'danger');
+    redirectHeader($path);
+  }
+}
+
+// is user approved
+function isUserApproved($message,$type){
+  global $conn;
+  $sql   = "SELECT `is_approved` FROM `users` WHERE `id` = {$_SESSION['id']} LIMIT 1";
+  $query = mysqli_query($conn,$sql);
+  $row   = mysqli_fetch_assoc($query);  
+
+  if(intval($row['is_approved']) !== 1){ //didnt change password yet
+    setMessage($message,$type);
+    $location = "edit_user.php?id=". base64_encode($_SESSION['id']);
+    redirectHeader($location);
+  }
+}
+
 /*==============
 SESSION Check
 ==============*/ 
@@ -60,36 +96,9 @@ function isAdmin($message,$type,$location){
 }
 
 
-// is user approved
-function isUserApproved($message,$type){
-  if($_SESSION['is_approved'] !== 1){ //didnt change password yet
-    setMessage($message,$type);
-    $location = "edit_user.php?id=". base64_encode($_SESSION['id']);
-    redirectHeader($location);
-  }
-}
 
-// is status active
-function isStatusActive(){
-  global $conn;
-  $sql   = "SELECT `status` FROM `users` WHERE `id` = {$_SESSION['id']} LIMIT 1";
-  $query = mysqli_query($conn,$sql);
-  $row   = mysqli_fetch_assoc($query);  
 
-  if(intval($row['status']) !== 1){ //Agent account not active 
-    unset($_SESSION['id']);
-    unset($_SESSION['full_name']);
-    unset($_SESSION['agent_code']);
-    unset($_SESSION['email']);
-    unset($_SESSION['status']);
-    unset($_SESSION['is_approved']);
-    unset($_SESSION['role_id']);
-    $host = $_SERVER['HTTP_HOST'];
-    $path = "http://$host/gym/login.php";
-    setMessage("Your Account has been Deactivated, please contact your Administrator ",'danger');
-    redirectHeader($path);
-  }
-}
+
 
 
 // clean all
