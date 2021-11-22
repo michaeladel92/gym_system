@@ -39,10 +39,7 @@
   $getMembersQuery = mysqli_query($conn,$sql);
   $countUsers      = mysqli_num_rows($getMembersQuery); 
 
-// Today members
-$sqlNewMembers = "SELECT `id` FROM `membership_track` WHERE `updated_at` >= CURDATE()";
-$newMembers = mysqli_query($conn,$sqlNewMembers);
-$countNewMembers = mysqli_num_rows($newMembers);
+
 ?>
 
 <style>
@@ -87,7 +84,7 @@ $countNewMembers = mysqli_num_rows($newMembers);
       </div>
       <div class="box">
         <h3>New Members</h3>
-        <h2 class="numbers"><?=$countNewMembers?></h2>
+        <h2 class="numbers"><?=countDailyNewMember()?></h2>
       </div>
    </div>
    

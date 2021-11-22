@@ -73,6 +73,9 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
         if(!validate($name,'empty')){
           $messages[] = 'Please Enter full Name!';  
         }
+        elseif(!validate($name,'string')){
+          $messages[] = 'Invalid String, Accept Char only [a - z]!';  
+        }
         elseif(!validate($name,'min',$min)){
           $messages[] = "min. char for Agent Name is $min";  
         }

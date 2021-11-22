@@ -1,6 +1,7 @@
 <?php
   require("inc/init.php");
   require_once("inc/nav.php");
+
   // check if session not set
   isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
   // check if account is active
@@ -29,6 +30,9 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
         if(!validate($name,'empty')){
           $messages[] = 'Please Enter full Member Name!';  
         }
+        elseif(!validate($name,'string')){
+          $messages[] = 'Invalid String, Accept Char only [a - z]!';  
+        }
         elseif(!validate($name,'min',$min)){
           $messages[] = "min. char for Member Name is $min";  
         }
@@ -44,12 +48,15 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
         }
         // validate start_date
         elseif(validate($start_date,'empty')){
-
-            if(date($start_date) <= date($yesterday)){
+            if(!isRealDate($start_date)){
+                $messages[] = "Invalid Start-Date Format";
+            }elseif(date($start_date) <= date($yesterday)){
               $messages[] = "Its not Possible to Reserve PASS DUE Date!";
               // validate end_date
             } elseif(!validate($end_date,'empty')){
               $messages[] = "Please Enter End Date!";
+            } elseif(!isRealDate($end_date)){
+              $messages[] = "Invalid End-Date Format";
             } elseif(date($start_date) > date($end_date)){
               $messages[] = "The end date Entered cannot be before the start date!";
             }
@@ -92,7 +99,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           }
         }
         else{
-        
+         
           // check if email exist in db
           $sql = "SELECT `phone` FROM `membership_info` WHERE `phone` = '{$phone}'";
           $query_check_phone = mysqli_query($conn,$sql);
@@ -209,12 +216,12 @@ input[type=number] {
           <div class="form-group col-md-6">
             <!-- start date -->
             <label for="inputAddress">start date</label>
-            <input name="start_date" type="date" class="form-control" id="inputAddress">
+            <input name="start_date" value="<?=(isset($_POST['start_date']) ? $_POST['start_date'] : '')?>" type="date" class="form-control" id="inputAddress">
           </div>
           <div class="form-group col-md-6">
             <!-- end date -->
             <label for="inputAddress2">end date</label>
-            <input name="end_date" type="date" class="form-control" id="inputAddress2">
+            <input name="end_date" value="<?=(isset($_POST['end_date']) ? $_POST['end_date'] : '')?>" type="date" class="form-control" id="inputAddress2">
           </div>
           <div class="form-group col-md-6">
             <!-- subscribe -->

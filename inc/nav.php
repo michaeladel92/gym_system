@@ -1,7 +1,6 @@
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <a class="navbar-brand" style="margin:0;padding:0;" href="#">
-      <img src="./img/logo.png" alt="rock gym logo" style="object-fit: contain; width:8rem;height:5rem;">
+      <img src="http://<?=$_SERVER['HTTP_HOST']?>/gym/img/logo.png" alt="rock gym logo" style="object-fit: contain; width:8rem;height:5rem;">
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -11,17 +10,17 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul dir="rtl" class="navbar-nav ml-auto">
         <li dir="ltr" class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+          <a class="nav-link dropdown-toggle" href="" id="navbarDropdown" role="button" data-toggle="dropdown"
             aria-expanded="false">
             <?=$_SESSION['full_name']."[".$_SESSION['agent_code']."]"?>
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="edit_user.php?id=<?=base64_encode($_SESSION['id'])?>">Edit</a>
-            <a class="dropdown-item" href="./role_index.php">roles</a>
+            <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/edit_user.php?id=<?=base64_encode($_SESSION['id'])?>">Edit</a>
             <?php if($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2): ?>
-            <a class="dropdown-item" href="dashboard.php">Dashboard</a>
-            <?php if($_SESSION['role_id'] === 1): ?>
-            <a class="dropdown-item" href="add_user.php">Add agent</a>
+              <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/dashboard.php">Dashboard</a>
+              <?php if($_SESSION['role_id'] === 1): ?>
+                <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/add_user.php">Add agent</a>
+                <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/roles/index.php">Roles</a>
 
             <?php 
 
@@ -34,10 +33,10 @@
         </li>
         <!-- active -->
         <li class="nav-item ">
-          <a class="nav-link" href="add_membership.php">New Membership</a>
+          <a class="nav-link" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/add_membership.php">New Membership</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="index.php">Members</a>
+          <a class="nav-link" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/index.php">Members</a>
         </li>
       </ul>
     </div>

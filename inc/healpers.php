@@ -17,6 +17,14 @@ function roleArray(){
   return $role_id_array;
 }
 
+// count new members
+function countDailyNewMember(){
+  global $conn;
+$sqlNewMembers = "SELECT `id` FROM `membership_track` WHERE `updated_at` >= CURDATE()";
+$newMembers = mysqli_query($conn,$sqlNewMembers);
+return $countNewMembers = mysqli_num_rows($newMembers);
+}
+
 /*==============
 SESSION Check
 ==============*/ 
@@ -76,9 +84,10 @@ function isStatusActive(){
     unset($_SESSION['status']);
     unset($_SESSION['is_approved']);
     unset($_SESSION['role_id']);
-
+    $host = $_SERVER['HTTP_HOST'];
+    $path = "http://$host/gym/login.php";
     setMessage("Your Account has been Deactivated, please contact your Administrator ",'danger');
-    redirectHeader('login.php');
+    redirectHeader($path);
   }
 }
 
@@ -87,6 +96,8 @@ function isStatusActive(){
 function clean($inputValue,$check){
   global $conn;
   $clean = trim($inputValue);
+  // $clean = str_replace("  "," ",$clean);
+  $clean = preg_replace('/\s+/', ' ', $clean);
   $clean = htmlspecialchars($clean);
   $clean = stripslashes($clean);
   $clean = strtolower($clean);
@@ -141,21 +152,15 @@ function validate($input,$flag,$length = 6){
       case "phone":
           if(!preg_match('/^01[0-2,5][0-9]{8}$/',$input)){$status = false;}   
         break;
-     case "string": 
-    
-          if(!preg_match('/^[a-zA-Z]*$/',$input)){
-              $status = false;
-          }
-   break;
-   case "int": 
-    if(!filter_var($input,FILTER_VALIDATE_INT)){
-        $status = false;
-    }
-    break;
+      case "string": 
+          if(!preg_match('/^[a-zA-Z\s]*$/',$input)){$status = false;}
+        break;
+      case "int": 
+          if(!filter_var($input,FILTER_VALIDATE_INT)){$status = false;}
+        break;
       case "num":
           if(!filter_var($input,FILTER_VALIDATE_INT)){$status = false;}   
-  break;  
-
+        break;  
   }
   return $status;
 }
@@ -195,3 +200,11 @@ function redirectHeader($location){
  } 
 
 
+// date validate
+function isRealDate($date) { 
+  if (false === strtotime($date)) { 
+      return false;
+  } 
+  list($year, $month, $day) = explode('-', $date); 
+  return checkdate($month, $day, $year);
+}

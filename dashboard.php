@@ -93,11 +93,11 @@
       </div>
       <div class="box">
         <h3>Membership</h3>
-        <h2 class="numbers">8</h2>
+        <h2 class="numbers">ss</h2>
       </div>
       <div class="box">
         <h3>New Members</h3>
-        <h2 class="numbers">8</h2>
+        <h2 class="numbers"><?=countDailyNewMember()?></h2>
       </div>
    </div>
    
@@ -138,12 +138,12 @@
                   $count     = mysqli_num_rows($userQuery);
                   if($count === 1){
                     $result = mysqli_fetch_assoc($userQuery);
-                    echo $result['full_name'] ."[".$userLists['agent_code']."]"; 
+                    echo $result['full_name'] ."[".$result['agent_code']."]"; 
                   }else{
                     echo "-";
                   }                              
               }else{
-                echo $userLists['full_name'] ."[".$result['agent_code']."]";
+                echo $userLists['full_name'] ."[".$userLists['agent_code']."]";
               }
               
               
