@@ -7,6 +7,8 @@ isSessionIdNotAvailable('Please Login to procceed!','danger','../login.php');
 isAdmin('Access Denied!','danger','../index.php');
 // check if account is active
 isStatusActive();
+// did agent account approved
+isUserApproved("Access Denied!, Please change you're password to active your Account!",'danger');
   
     $notifications = [];
   if($_SERVER['REQUEST_METHOD'] == "POST"){

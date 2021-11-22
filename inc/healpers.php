@@ -56,7 +56,8 @@ function isUserApproved($message,$type){
 
   if(intval($row['is_approved']) !== 1){ //didnt change password yet
     setMessage($message,$type);
-    $location = "edit_user.php?id=". base64_encode($_SESSION['id']);
+    $host = $_SERVER['HTTP_HOST'];
+    $location = "http://$host/gym/edit_user.php?id=". base64_encode($_SESSION['id']);
     redirectHeader($location);
   }
 }

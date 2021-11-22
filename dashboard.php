@@ -42,10 +42,20 @@
                 `users`.`id` = `membership_track`.`user_id`
               WHERE
                 `membership_track`.`status` = 1 
-              ORDER BY 
-                 `membership_track`.`updated_at` DESC";
+                AND
+                      `membership_track`.`id`
+                      IN(
+                       SELECT MAX(`membership_track`.`id`) 
+                              FROM
+                              `membership_track`
+                              GROUP BY
+                              `membership_track`.`member_id`
+                              HAVING 
+                              COUNT(*) >= 1 ORDER by `membership_track`.`member_id` ASC
+                      ) 
+                      ORDER BY `membership_track`.`updated_at` DESC";
   $query_memberTrack = mysqli_query($conn,$sql);
-
+  $count_member      = mysqli_num_rows($query_memberTrack);                      
   
   $greenCircle ="<span style='width: 0.5rem;height: 0.5rem;background-color: green;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px green;'></span>";
   $yellowCircle = "<span style='width: 0.5rem;height: 0.5rem;background-color: #d7d72c;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px #d7d72c;'></span>";
@@ -93,7 +103,7 @@
       </div>
       <div class="box">
         <h3>Membership</h3>
-        <h2 class="numbers">ss</h2>
+        <h2 class="numbers"><?=$count_member?></h2>
       </div>
       <div class="box">
         <h3>New Members</h3>
@@ -166,8 +176,8 @@
           <th scope="col">Price</th>
           <th scope="col">start</th>
           <th scope="col">End</th>
-          <th scope="col">latest update</th>
-          <th scope="col">Actions</th>
+          <th scope="col">Latest Action</th>
+          <th scope="col">by</th>
           <th scope="col">Options</th>
         </tr>
       </thead>
@@ -180,6 +190,7 @@
           </td>
           <td><?=date("j M, Y", strtotime($memberRow['start_date']))?></td>
           <td><?=date("j M, Y", strtotime($memberRow['end_date']))?></td>
+          <td><?=date("j M, Y - g:i a", strtotime($memberRow['updated_at']))?> 
           <td>
             <?php 
               
@@ -204,10 +215,9 @@
             }
             ?>
           </td>
-          <td><?=date("j M, Y - g:i a", strtotime($memberRow['updated_at']))?> 
         </td>
           <td>
-            <a href="<?=$memberRow['id']?>" class="btn btn-dark">Edit</a>
+            <a href="edit_track.php?id=<?= base64_encode($memberRow['id'])?>" class="btn btn-dark">Edit</a>
             <a href="<?=$memberRow['id']?>" class="btn btn-danger">X</a>
           </td>
         </tr>

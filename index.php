@@ -25,6 +25,8 @@
                       ON `users`.`id` = `membership_track`.`user_id`
                       
                       WHERE 
+                      `membership_track`.`status` = 1 
+                      AND
                       `membership_track`.`id`
                       IN(
                        SELECT MAX(`membership_track`.`id`) 
