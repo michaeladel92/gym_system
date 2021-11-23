@@ -7,6 +7,28 @@
   isStatusActive();
   // did agent account approved
   isUserApproved("Access Denied!, Please change you're password to active your Account!",'danger');
+ 
+ 
+  if($_SERVER['REQUEST_METHOD'] === "GET"){
+    // DELETE CCOMMENT
+    if(isset($_GET['delete_comment']) && $_GET['delete_comment'] !== ''){
+      // check if role is admin or manager
+      isAdminOrManager('Access Denied!','danger','index.php');
+      $com_id = base64_decode($_GET['delete_comment']);
+      $com_id = clean($com_id,'num');
+      $sql   = "DELETE FROM `comments` WHERE `id` = $com_id LIMIT 1";
+      $query = mysqli_query($conn,$sql);
+      if($query){
+        setMessage('Comment Deleted!','success');
+        redirectHeader('index.php');
+      }else{
+        setMessage('Oops, Something went wrong please try again!','danger');
+        redirectHeader('index.php');
+      }
+    }
+}
+
+
 
   // get id
 if(!isset($_GET['id']) || $_GET['id'] === '' ){
@@ -215,7 +237,7 @@ body{background:#632778}.form-control:focus{box-shadow:none;border-color:#ba68c8
           <td><?= $commentRow['user_name']."[".$commentRow['agent_code']."]"?></td>
           <?php if($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2): ?>
           <td>
-            <a href="membership.profile.php?id= &delete_comment=<?= base64_encode($commentRow['id'])?>" class="btn btn-danger">X</a>
+            <a href="membership_profile.php?id=<?= base64_encode($member_id)?>&delete_comment=<?= base64_encode($commentRow['id'])?>" class="btn btn-danger">X</a>
           </td>
           <?php endif;?>
         </tr>
