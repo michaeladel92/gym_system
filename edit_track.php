@@ -11,7 +11,7 @@
 // get id
 if(!isset($_GET['id']) || $_GET['id'] === '' ){
   setMessage('Access Denied!','danger');
-  // redirectHeader('index.php');
+  redirectHeader('index.php');
 
 }else{
   // decode id
@@ -21,7 +21,7 @@ if(!isset($_GET['id']) || $_GET['id'] === '' ){
 
   if(!validate($member_track_id,'num')){
     setMessage('Access Denied!','danger');
-    // redirectHeader('index.php');
+    redirectHeader('index.php');
   }else{
     $sql = "SELECT 
                 `membership_track`.*,

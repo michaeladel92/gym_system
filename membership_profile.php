@@ -1,19 +1,40 @@
 <?php
   require("inc/init.php");
   require_once("inc/nav.php");
+  // check if session not set
+  isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
+  // check if account is active
+  isStatusActive();
+  // did agent account approved
+  isUserApproved("Access Denied!, Please change you're password to active your Account!",'danger');
 
- 
-  
-  
-    $member_id= base64_decode($_GET['id']) ;
+  // get id
+if(!isset($_GET['id']) || $_GET['id'] === '' ){
+  setMessage('Access Denied!','danger');
+  redirectHeader('index.php');
 
+}else{
+  // decode id
+  $member_id = base64_decode($_GET['id']);
+  $member_id = clean($member_id,'num');
+
+
+  if(!validate($member_id,'num')){
+    setMessage('Access Denied!','danger');
+    redirectHeader('index.php');
+  }else{
+    
     $sql_info = "SELECT * FROM `membership_info` WHERE `id` = $member_id LIMIT 1";
     $getInfoQuery = mysqli_query($conn,$sql_info);
-    $member_info = mysqli_fetch_assoc($getInfoQuery); 
-
-
- 
-
+    $count = mysqli_num_rows($getInfoQuery);
+    if($count === 0){
+      setMessage('Member Info Not found!','danger');
+      redirectHeader('index.php');
+    }else{
+      $member_info = mysqli_fetch_assoc($getInfoQuery); 
+    }
+  }
+}
 
   // GET all Active Members Track
   $sql = "SELECT 
@@ -36,7 +57,7 @@
               ORDER BY 
                  `membership_track`.`updated_at` DESC";
   $query_memberTrack = mysqli_query($conn,$sql);
-
+  // GET All Comment
   $sql_comm = "  SELECT 
                       `comments`.*, 
                     
@@ -55,7 +76,7 @@
                       `comments`.`created_at` DESC";
   $getCommQuery = mysqli_query($conn,$sql_comm);
 
-
+  // Latest Update
   $sql_update = "  SELECT 
                       `member_user`.*, 
                     
@@ -75,6 +96,8 @@
   $getUpdateQuery = mysqli_query($conn,$sql_update);
   
 
+  $greenCircle ="<span style='width: 0.5rem;height: 0.5rem;background-color: green;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px green;'></span>";
+  $yellowCircle = "<span style='width: 0.5rem;height: 0.5rem;background-color: #d7d72c;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px #d7d72c;'></span>";
   ?>
    <style>
 
@@ -130,50 +153,49 @@ body {
               <img class="rounded-circle mt-5" width="150px" src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
               <span class="font-weight-bold"><?php echo  $member_info['full_name']?></span>
               <span class="text-black-50"><?php echo  $member_info['phone']?></span>
-              <span><a  href="edit_user.php"class="btn btn-primary profile-button" >edit member info</a> </span></div>
-          
+              <span>
+                <a  href="edit_membership_info.php?id=<?= base64_encode($member_info['id'])?>"class="btn btn-primary profile-button" >edit member info</a>
+
+              <a  href="extend_membership.php?id=<?= base64_encode($member_info['id'])?>"class="btn btn-primary profile-button" >extend</a>
+
+              <a style="background-color:#dc3545;"  href="cancel_membership.php?id=<?= base64_encode($member_info['id'])?>"class="btn btn-primary profile-button" >Cancel Membership</a>
+            </span></div>
         </div>
-   
-   
     </div>
    
-
     <div class="row">
             <div class="col-md-12 border-right">
             <div class="p-3 py-5">
             <div style="  text-align: center; " class="d-flex justify-content-between  mb-3" >
-                    <h4 class="text-center"   style="  text-align: center; "> member tracs </h4>
+                    <h4 class="text-center"   style="  text-align: center; "> Member Tracks </h4>
                 </div>
-                 <!-- member track table -->
+  <!-- member track table -->
   <table class="table">
       <thead class="thead-dark">
         <tr>
-       
-         
-         
           <th scope="col">#</th>
           <th scope="col">price	</th>
           <th scope="col">bill </th>
-          <th scope="col">start_date </th>
-          <th scope="col">end_date </th>
-          <th scope="col">created_by  </th>
-          <th scope="col">created_at  </th>
-          <th scope="col">updated_at  </th>
-          <th scope="col">action_id  </th>
+          <th scope="col">start</th>
+          <th scope="col">end</th>
+          <th scope="col">Latest Action</th>
+          <th scope="col">By  </th>
           <th scope="col">status </th>
-          <th scope="col">Options</th>
         </tr>
       </thead>
       <tbody>
-        <?php while($memberRow = mysqli_fetch_assoc($query_memberTrack)): ?>
+        <?php 
+        $i_track = 0;
+        while($memberRow = mysqli_fetch_assoc($query_memberTrack)): ?>
         <tr>
-          <th scope="row"><?=$memberRow['id']?></th>
+          <th scope="row"><?=++$i_track?></th>
           <td><?= number_format($memberRow['price']);?>   </td>
           <td><?=$memberRow['bill']?></td>
           
         
           <td><?=date("j M, Y", strtotime($memberRow['start_date']))?></td>
           <td><?=date("j M, Y", strtotime($memberRow['end_date']))?></td>
+          <td><?=date("j M, Y - g:i a", strtotime($memberRow['updated_at']))?> </td>
           <td>
             <?php 
               
@@ -198,67 +220,46 @@ body {
             }
             ?>
           </td>
-          <td><?=date("j M, Y - g:i a", strtotime($memberRow['created_at']))?> </td>
-          <td><?=date("j M, Y - g:i a", strtotime($memberRow['updated_at']))?> </td>
-          <td><?=$memberRow['action_id']?></td>
         
-        <td><?= (intval($memberRow['status']) === 1 ? 'Active' : 'De-activate') ?></td>
-
-          <td>
-            <a href="<?=$memberRow['id']?>" class="btn btn-dark">Edit</a>
-           
-          </td>
+        <td><?= (intval($memberRow['status']) === 1 ? $greenCircle : $yellowCircle) ?></td>
         </tr>
         <?php endwhile; ?>
       </tbody>
     </table>
     
     <div style="  text-align: center; " class="d-flex justify-content-between  align-items-center text-center mb-3" >
-                    <h4 class="text-center align-items-center text-center"   style="  text-align: center; "> member comments </h4>
-                </div>
-                 <!-- member track table -->
-  <table class="table">
+                    <h4 class="text-center align-items-center text-center"   style="  text-align: center; "> Member Comments </h4>
+    </div>
+    <!-- member Comment table -->
+  
+    <table class="table">
       <thead class="thead-dark">
         <tr>
-       
-         
-         
           <th scope="col">#</th>
           <th scope="col">comment	</th>
-       
-          <th scope="col">created_at  </th>
-          <th scope="col">created_by  </th>
-       
-          <th scope="col">Options</th>
+          <th scope="col">Created at  </th>
+          <th scope="col">By</th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
         <?php 
-        
-        $comments=3;
-        
+          $comments= true;
+          $i_com = 0;
         while($commentRow = mysqli_fetch_assoc($getCommQuery)): 
-          $comments=4;
-        
+          $comments=  false ;
         ?>
         <tr>
-          <th scope="row"><?=$commentRow['id']?></th>
+          <th scope="row"><?=++$i_com;?></th>
           <td><?=$commentRow['comment']?></td>
-          
-        
-          
-          <td><?=date("j M, Y - g:i a", strtotime($commentRow['created_at']))?> </td>
-        
-          
+          <td><?=date("j M, Y - g:i a", strtotime($commentRow['created_at']))?> </td>        
           <td><?= $commentRow['user_name']."[".$commentRow['agent_code']."]"?></td>
           <td>
-            
-            <a href="<?=$commentRow['id']?>" class="btn btn-dark">Edit</a>
-           
+            <a href="<?=$commentRow['id']?>" class="btn btn-danger">X</a>
           </td>
         </tr>
         <?php endwhile;
-      if (   $comments==3) {
+      if ($comments === true) {
         echo "<div class='alert alert-info alert-dismissible fade show' role='alert'>
             no comments added yet
             <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
@@ -271,70 +272,35 @@ body {
     </table>
  
     <div style="  text-align: center; " class="d-flex justify-content-between  mb-3" >
-                    <h4 class="text-center"   style="  text-align: center; "> member info  tracks </h4>
-                </div>
-                 <!-- member track table -->
-  <table class="table">
+        <h4 class="text-center"   style="  text-align: center; ">Latest Actions</h4>
+    </div>
+  <!-- Latest Actions -->
+  <table class="table offset-md-3 col-md-6">
       <thead class="thead-dark">
         <tr>
-       
-         
-         
           <th scope="col">#</th>
           <th scope="col">updated_by	</th>
-       
           <th scope="col">created_at  </th>
-       
-       
-          <th scope="col">Options</th>
         </tr>
       </thead>
       <tbody>
         <?php 
-        
-        
-        $updates=3;
+        $i_users = 0;
         while($updateRow = mysqli_fetch_assoc($getUpdateQuery)):
-          $updates=5; ?>
-        
+          ?>
         <tr>
-          <th scope="row"><?=$updateRow['id']?></th>
-          
-        
-          
-        
-          
+          <th scope="row"><?=++$i_users?></th>
           <td><?= $updateRow['user_name']."[".$updateRow['agent_code']."]"?></td>
           <td><?=date("j M, Y - g:i a", strtotime($updateRow['created_at']))?> </td>
-
-          <td>
-            
-            <a href="<?=$updateRow['id']?>" class="btn btn-dark">Edit</a>
-           
-          </td>
         </tr>
-        <?php endwhile;
-        
-        
-          
-        if (   $updates==3) {
-          echo "<div class='alert alert-info alert-dismissible fade show' role='alert'>
-              no data added yet
-              <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
-                <span aria-hidden='true'>&times;</span>
-              </button>
-           </div>";
-            }?>
+        <?php endwhile;?>
       </tbody>
-      
     </table>
         </div>
         </div>
-   
     </div>
     <br>
     <br>
-
 
 </div>
 </div>

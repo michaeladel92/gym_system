@@ -140,7 +140,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           }else{
               
               // Important emails that are not allowed to be changed in status nor password deactivated
-              $vipEmails = ['michaeladel1992@gmail.com','admin@admin.com'];
+              $vipEmails = ['michaeladel1992@gmail.com','admin@admin.com','ahmeddakhli99@gmail.com'];
               if($_SESSION['id'] !== intval($userRow['id'])){
                 if($status === 0 || validate($password,'empty')){
                   if(in_array(strtolower($userRow['email']),$vipEmails)){

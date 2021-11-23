@@ -57,6 +57,31 @@
   $query_memberTrack = mysqli_query($conn,$sql);
   $count_member      = mysqli_num_rows($query_memberTrack);                      
   
+
+  // GET All Comment
+  $sql_comm = "  SELECT 
+                      `comments`.*,
+                      `membership_info`.`full_name` as `member_name`, 
+                      `users`.`full_name` AS `user_name`,
+                      `users`.`agent_code`
+                    FROM
+                      `comments`
+
+                    INNER JOIN
+                      `users`
+                    ON
+                      `users`.`id` = `comments`.`user_id`
+                    INNER JOIN
+                      `membership_info`
+                    ON
+                      `membership_info`.`id` = `comments`.`member_id`
+                    
+                    ORDER BY 
+                      `comments`.`created_at` DESC";
+  $getCommQuery = mysqli_query($conn,$sql_comm);
+
+
+
   $greenCircle ="<span style='width: 0.5rem;height: 0.5rem;background-color: green;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px green;'></span>";
   $yellowCircle = "<span style='width: 0.5rem;height: 0.5rem;background-color: #d7d72c;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px #d7d72c;'></span>";
 ?>
@@ -218,10 +243,49 @@
         </td>
           <td>
             <a href="edit_track.php?id=<?= base64_encode($memberRow['id'])?>" class="btn btn-dark">Edit</a>
-            <a href="<?=$memberRow['id']?>" class="btn btn-danger">X</a>
           </td>
         </tr>
         <?php endwhile; ?>
+      </tbody>
+    </table>
+
+        <!-- member Comment table -->
+            
+        <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Member</th>
+          <th scope="col">comment	</th>
+          <th scope="col">Created at  </th>
+          <th scope="col">By</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php 
+          $comments= true;
+        while($commentRow = mysqli_fetch_assoc($getCommQuery)): 
+          $comments=  false ;
+        ?>
+        <tr>
+          <th scope="row"><a href="membership_profile.php?id=<?= base64_encode($commentRow['member_id'])?>"><?=$commentRow['member_name']?></a></th>
+          <td><?=$commentRow['comment']?></td>
+          <td><?=date("j M, Y - g:i a", strtotime($commentRow['created_at']))?> </td>        
+          <td><?= $commentRow['user_name']."[".$commentRow['agent_code']."]"?></td>
+          <td>
+            <a href="<?=$commentRow['id']?>" class="btn btn-danger">X</a>
+          </td>
+        </tr>
+        <?php endwhile;
+      if ($comments === true) {
+        echo "<div class='alert alert-info alert-dismissible fade show' role='alert'>
+            no comments added yet
+            <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+              <span aria-hidden='true'>&times;</span>
+            </button>
+         </div>";
+          }
+        ?>
       </tbody>
     </table>
 
