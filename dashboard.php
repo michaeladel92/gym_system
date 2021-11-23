@@ -8,21 +8,59 @@
   // check if account is active
   isStatusActive();
 
+  if($_SERVER['REQUEST_METHOD'] === "GET"){
+      // DELETE CCOMMENT
+      if(isset($_GET['delete_comment']) && $_GET['delete_comment'] !== ''){
+        $com_id = base64_decode($_GET['delete_comment']);
+        $com_id = clean($com_id,'num');
+        $sql   = "DELETE FROM `comments` WHERE `id` = $com_id LIMIT 1";
+        $query = mysqli_query($conn,$sql);
+        if($query){
+          setMessage('Comment Deleted!','success');
+          redirectHeader('dashboard.php');
+        }else{
+          setMessage('Oops, Something went wrong please try again!','danger');
+          redirectHeader('dashboard.php');
+        }
+      }
+  }
+  if($_SERVER['REQUEST_METHOD'] === "POST"){
+        //search agent 
+        if(isset($_POST['search_agent'])){
+          $search = clean($_POST['agent'],'string');
+          $sql = "SELECT  
+                      `users`.*,
+                      `roles`.`role`
+                                FROM 
+                                    `users`
+                                INNER JOIN 
+                                    `roles`
+                                ON `users`.`role_id` = `roles`.`id`
+                                WHERE 
+                                    (`users`.`agent_code` LIKE '%{$search}%' OR 
+                                    `users`.`full_name` LIKE '%{$search}%' OR
+                                    `users`.`email` LIKE '%{$search}%'
+                                    )
+                                ORDER BY `users`.`id` DESC
+                    ";
+        }
 
-  //all get users 
-  $sql = "SELECT  
-                `users`.*,
-                `roles`.`role`
-                          FROM 
-                              `users`
-                          INNER JOIN 
-                               `roles`
-                          ON `users`.`role_id` = `roles`.`id`
-                          ORDER BY `id` DESC
-                          ";
+  }else{
+    //all get agent 
+    $sql = "SELECT  
+    `users`.*,
+    `roles`.`role`
+              FROM 
+                  `users`
+              INNER JOIN 
+                  `roles`
+              ON `users`.`role_id` = `roles`.`id`
+              ORDER BY `users`.`id` DESC
+              ";
+  }
   $getUsersQuery = mysqli_query($conn,$sql);
-  $countUsers    = mysqli_num_rows($getUsersQuery);
 
+  
 
   // GET all Active Members Track
   $sql = "SELECT 
@@ -79,44 +117,14 @@
                     ORDER BY 
                       `comments`.`created_at` DESC";
   $getCommQuery = mysqli_query($conn,$sql_comm);
-
-
+  $countComments = mysqli_num_rows($getCommQuery);  
 
   $greenCircle ="<span style='width: 0.5rem;height: 0.5rem;background-color: green;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px green;'></span>";
   $yellowCircle = "<span style='width: 0.5rem;height: 0.5rem;background-color: #d7d72c;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px #d7d72c;'></span>";
 ?>
 
 <style>
-.box-container,.box-container .box{
-  display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.box-container .box{
- flex-direction:column; 
-}
-.box-container .box:first-child{
-  background-color:#ffadad;
-}
-.box-container .box:nth-of-type(2){
-  background-color:#ffd6a5;
-}
-.box-container .box:nth-of-type(3){
-  background-color:#fdffb6;
-}
-.box-container .box{
-  background: red;
-    padding: 1rem;
-    width: 14rem;
-    height: 12rem;
-    text-align: center;
-    border-radius: 2rem;
-    color: #4a4a4a;
-    margin: 1rem;
-}
-.box-container .box .numbers{
-  font-size:3rem
-}
+.box-container,.box-container .box{display:flex;justify-content:center;align-items:center}.box-container .box{flex-direction:column}.box-container .box:first-child{background-color:#ffadad}.box-container .box:nth-of-type(2){background-color:#ffd6a5}.box-container .box:nth-of-type(3){background-color:#fdffb6}.box-container .box:nth-of-type(4){background-color:#eed7ce}.box-container .box{background:red;padding:1rem;width:14rem;height:12rem;text-align:center;border-radius:2rem;color:#4a4a4a;margin:1rem}.box-container .box .numbers{font-size:3rem}
 </style>
 
  <div class="container mt-5">
@@ -124,7 +132,7 @@
    <div class="box-container">
       <div class="box">
         <h3>users</h3>
-        <h2 class="numbers"><?=$countUsers?></h2>
+        <h2 class="numbers"><?=countActiveAgents()?></h2>
       </div>
       <div class="box">
         <h3>Membership</h3>
@@ -134,10 +142,26 @@
         <h3>New Members</h3>
         <h2 class="numbers"><?=countDailyNewMember()?></h2>
       </div>
+      <div class="box">
+        <h3>Daily Earns</h3>
+        <h2 class="numbers"><?=number_format(dailyNewMemberEarns())?></h2>
+      </div>
    </div>
-   
+
+   <div style="text-align:center;" class="d-flex justify-content-between  mb-3" >
+      <h4 class="text-center" style="text-align: center;">Agents</h4>                 
+  </div>
+  <form class="ml-auto col-md-12" action="<?=$_SERVER['PHP_SELF'];?>" method="POST">
+      <div class="input-group mb-3 col-md-4">
+                 <input type="text" class="form-control" name="agent" placeholder="Search Agent" >
+                <div class="input-group-append">
+                <button class="btn btn-outline-info" name="search_agent" type="submit" id="button-addon2">Search</button>
+                </div>
+      </div>
+  </form> 
    <!-- users table -->
    <?php if( isset($_SESSION['message'])){displayMessage();}?>
+
  <table class="table">
       <thead class="thead-dark">
         <tr>
@@ -192,6 +216,10 @@
 
       </tbody>
     </table>
+    <div style="text-align:center;" class="d-flex justify-content-between  mb-3" >
+      <h4 class="text-center" style="text-align: center;">Member Tracks</h4>                 
+  </div>
+    <?php if($count_member > 0):?>
   <!-- member track table -->
   <table class="table">
       <thead class="thead-dark">
@@ -248,11 +276,16 @@
         <?php endwhile; ?>
       </tbody>
     </table>
-
-        <!-- member Comment table -->
-            
-        <table class="table">
-      <thead class="thead-dark">
+    <?php else: ?>
+      <div class='alert alert-info alert-dismissible fade show' role='alert'>No Members yet</div>
+    <?php endif; ?>
+    <div style="text-align:center;" class="d-flex justify-content-between  mb-3" >
+      <h4 class="text-center" style="text-align: center;">Comments</h4>                 
+  </div>
+          <!-- member Comment table -->
+        <?php if($countComments > 0): ?>      
+      <table class="table">
+        <thead class="thead-dark">
         <tr>
           <th scope="col">Member</th>
           <th scope="col">comment	</th>
@@ -262,34 +295,22 @@
         </tr>
       </thead>
       <tbody>
-        <?php 
-          $comments= true;
-        while($commentRow = mysqli_fetch_assoc($getCommQuery)): 
-          $comments=  false ;
-        ?>
+        <?php while($commentRow = mysqli_fetch_assoc($getCommQuery)): ?>
         <tr>
           <th scope="row"><a href="membership_profile.php?id=<?= base64_encode($commentRow['member_id'])?>"><?=$commentRow['member_name']?></a></th>
           <td><?=$commentRow['comment']?></td>
           <td><?=date("j M, Y - g:i a", strtotime($commentRow['created_at']))?> </td>        
           <td><?= $commentRow['user_name']."[".$commentRow['agent_code']."]"?></td>
           <td>
-            <a href="<?=$commentRow['id']?>" class="btn btn-danger">X</a>
+            <a href="dashboard.php?delete_comment=<?= base64_encode($commentRow['id'])?>" class="btn btn-danger">X</a>
           </td>
         </tr>
-        <?php endwhile;
-      if ($comments === true) {
-        echo "<div class='alert alert-info alert-dismissible fade show' role='alert'>
-            no comments added yet
-            <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
-              <span aria-hidden='true'>&times;</span>
-            </button>
-         </div>";
-          }
-        ?>
+        <?php endwhile;?>
       </tbody>
     </table>
-
-    
+      <?php else:?> 
+        <div class='alert alert-info alert-dismissible fade show' role='alert'>no comments</div>
+      <?php endif;?> 
 </div>
 
 <?php

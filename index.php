@@ -5,41 +5,87 @@
   isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
   // check if account is active
   isStatusActive();
-  //all get Members 
-  $sql = "SELECT  
-                `membership_info`.*,
-                `membership_track`.`start_date`,
-                `membership_track`.`end_date`,
-                `membership_track`.`action_id`,
-                `membership_track`.`created_at`,
-                `membership_track`.`updated_at`,
-                `users`.`full_name` AS `agent_name`,
-                `users`.`agent_code`
-                      FROM 
-                        `membership_info`
-                      INNER JOIN 
+
+  if($_SERVER['REQUEST_METHOD'] === "POST"){
+      // search membership
+      if(isset($_POST['search_membership'])){
+        $search = clean($_POST['membership'],'string');
+        $sql = "SELECT  
+                      `membership_info`.*,
+                      `membership_track`.`start_date`,
+                      `membership_track`.`end_date`,
+                      `membership_track`.`action_id`,
+                      `membership_track`.`created_at`,
+                      `membership_track`.`updated_at`,
+                      `users`.`full_name` AS `agent_name`,
+                      `users`.`agent_code`
+                  FROM 
+                      `membership_info`
+                  INNER JOIN 
+                      `membership_track`
+                  ON `membership_info`.`id` = `membership_track`.`member_id`
+                  INNER JOIN 
+                      `users`
+                  ON  `users`.`id` = `membership_track`.`user_id`
+                  WHERE 
+                  `membership_track`.`status` = 1 
+                  AND
+                  (`membership_info`.`full_name` LIKE '%{$search}%' OR 
+                   `membership_info`.`phone` LIKE '%{$search}%' 
+                  )
+                  AND
+                  `membership_track`.`id`
+                  IN(
+                  SELECT MAX(`membership_track`.`id`) 
+                              FROM
                           `membership_track`
-                      ON `membership_info`.`id` = `membership_track`.`member_id`
-                      INNER JOIN 
-                          `users`
-                      ON `users`.`id` = `membership_track`.`user_id`
-                      
-                      WHERE 
-                      `membership_track`.`status` = 1 
-                      AND
-                      `membership_track`.`id`
-                      IN(
-                       SELECT MAX(`membership_track`.`id`) 
-                                  FROM
-                              `membership_track`
-                              GROUP BY
-                              `membership_track`.`member_id`
-                              HAVING 
-                              COUNT(*) >= 1 ORDER by `membership_track`.`member_id` ASC
-                      ) 
-                      ORDER BY `membership_track`.`updated_at` DESC";
+                          GROUP BY
+                          `membership_track`.`member_id`
+                          HAVING 
+                          COUNT(*) >= 1 ORDER by `membership_track`.`member_id` ASC
+                  ) 
+                  ORDER BY `membership_track`.`updated_at` DESC";
+      }
+    
+  }else{
+        //all get Members 
+        $sql = "SELECT  
+                      `membership_info`.*,
+                      `membership_track`.`start_date`,
+                      `membership_track`.`end_date`,
+                      `membership_track`.`action_id`,
+                      `membership_track`.`created_at`,
+                      `membership_track`.`updated_at`,
+                      `users`.`full_name` AS `agent_name`,
+                      `users`.`agent_code`
+                  FROM 
+                      `membership_info`
+                  INNER JOIN 
+                      `membership_track`
+                  ON `membership_info`.`id` = `membership_track`.`member_id`
+                  INNER JOIN 
+                      `users`
+                  ON  `users`.`id` = `membership_track`.`user_id`
+                  WHERE 
+                  `membership_track`.`status` = 1 
+                  AND
+                  `membership_track`.`id`
+                  IN(
+                  SELECT MAX(`membership_track`.`id`) 
+                              FROM
+                          `membership_track`
+                          GROUP BY
+                          `membership_track`.`member_id`
+                          HAVING 
+                          COUNT(*) >= 1 ORDER by `membership_track`.`member_id` ASC
+                  ) 
+                  ORDER BY `membership_track`.`updated_at` DESC";
+  }
+
+
+  
   $getMembersQuery = mysqli_query($conn,$sql);
-  $countUsers      = mysqli_num_rows($getMembersQuery); 
+  $countMembers      = mysqli_num_rows($getMembersQuery); 
 
 
 ?>
@@ -82,14 +128,21 @@
    <div class="box-container">
       <div class="box">
         <h3>Membership</h3>
-        <h2 class="numbers"><?=$countUsers?></h2>
+        <h2 class="numbers"><?=$countMembers?></h2>
       </div>
       <div class="box">
         <h3>New Members</h3>
         <h2 class="numbers"><?=countDailyNewMember()?></h2>
       </div>
    </div>
-   
+   <form class="ml-auto col-md-12" action="<?=$_SERVER['PHP_SELF'];?>" method="POST">
+      <div class="input-group mb-3 col-md-4">
+                 <input type="text" class="form-control" name="membership" placeholder="Search Agent" >
+                <div class="input-group-append">
+                <button class="btn btn-outline-info" name="search_membership" type="submit" id="button-addon2">Search</button>
+                </div>
+      </div>
+  </form> 
    <!-- users table -->
    <?php if( isset($_SESSION['message'])){displayMessage();}?>
  <table class="table">

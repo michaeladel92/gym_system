@@ -20,9 +20,48 @@ function roleArray(){
 // count new members
 function countDailyNewMember(){
   global $conn;
-$sqlNewMembers = "SELECT `id` FROM `membership_track` WHERE `updated_at` >= CURDATE()";
+$sqlNewMembers = "SELECT 
+                        `id`
+                      FROM
+                        `membership_track`
+                      WHERE
+                       `updated_at` >= CURDATE()
+                      AND
+                       `status` = 1";
 $newMembers = mysqli_query($conn,$sqlNewMembers);
 return $countNewMembers = mysqli_num_rows($newMembers);
+}
+
+
+// Earns new members
+function dailyNewMemberEarns(){
+  global $conn;
+  $sql = "SELECT 
+                SUM(`price`) AS `sum`
+              FROM
+                `membership_track`
+              WHERE
+                `updated_at` >= CURDATE()
+              AND
+                `status` = 1";
+  $query = mysqli_query($conn,$sql);
+  $sum   = mysqli_fetch_assoc($query);
+  return $sum['sum'];
+}
+
+// Count Active Agents
+function countActiveAgents(){
+  global $conn;
+  $sql = "SELECT  
+               COUNT(`id`) as `count`
+              FROM 
+                  `users`
+              WHERE
+                  `status` = 1    
+            ";
+  $query          = mysqli_query($conn,$sql);
+  $activeUsers    = mysqli_fetch_assoc($query);
+  return $activeUsers['count'];
 }
 
 // is status active

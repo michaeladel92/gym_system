@@ -75,7 +75,7 @@ if(!isset($_GET['id']) || $_GET['id'] === '' ){
                     ORDER BY 
                       `comments`.`created_at` DESC";
   $getCommQuery = mysqli_query($conn,$sql_comm);
-
+  $countComment = mysqli_num_rows($getCommQuery);
   // Latest Update
   $sql_update = "  SELECT 
                       `member_user`.*, 
@@ -100,52 +100,8 @@ if(!isset($_GET['id']) || $_GET['id'] === '' ){
   $yellowCircle = "<span style='width: 0.5rem;height: 0.5rem;background-color: #d7d72c;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px #d7d72c;'></span>";
   ?>
    <style>
-
-body {
-    background: rgb(99, 39, 120)
-}
-
-.form-control:focus {
-    box-shadow: none;
-    border-color: #BA68C8
-}
-
-.profile-button {
-    background: rgb(99, 39, 120);
-    box-shadow: none;
-    border: none
-}
-
-.profile-button:hover {
-    background: #682773
-}
-
-.profile-button:focus {
-    background: #682773;
-    box-shadow: none
-}
-
-.profile-button:active {
-    background: #682773;
-    box-shadow: none
-}
-
-.back:hover {
-    color: #682773;
-    cursor: pointer
-}
-
-.labels {
-    font-size: 11px
-}
-
-.add-experience:hover {
-    background: #BA68C8;
-    color: #fff;
-    cursor: pointer;
-    border: solid 1px #BA68C8
-}
-       </style>
+body{background:#632778}.form-control:focus{box-shadow:none;border-color:#ba68c8}.profile-button{background:#632778;box-shadow:none;border:none}.profile-button:hover{background:#682773}.profile-button:focus{background:#682773;box-shadow:none}.profile-button:active{background:#682773;box-shadow:none}.back:hover{color:#682773;cursor:pointer}.labels{font-size:11px}.add-experience:hover{background:#ba68c8;color:#fff;cursor:pointer;border:solid 1px #ba68c8}
+  </style>
 <div class="container rounded bg-white">
     <div class="row">
         <div class="col-md-12 border-right">
@@ -154,11 +110,14 @@ body {
               <span class="font-weight-bold"><?php echo  $member_info['full_name']?></span>
               <span class="text-black-50"><?php echo  $member_info['phone']?></span>
               <span>
+              <a  href="add_comment.php?id=<?= base64_encode($member_info['id'])?>"class="btn btn-primary profile-button" >Add Comment</a>
+                <?php if($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2):?>
                 <a  href="edit_membership_info.php?id=<?= base64_encode($member_info['id'])?>"class="btn btn-primary profile-button" >edit member info</a>
-
+                <?php endif; ?>    
               <a  href="extend_membership.php?id=<?= base64_encode($member_info['id'])?>"class="btn btn-primary profile-button" >extend</a>
-
+              <?php if($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2):?>
               <a style="background-color:#dc3545;"  href="cancel_membership.php?id=<?= base64_encode($member_info['id'])?>"class="btn btn-primary profile-button" >Cancel Membership</a>
+              <?php endif; ?> 
             </span></div>
         </div>
     </div>
@@ -228,10 +187,10 @@ body {
     </table>
     
     <div style="  text-align: center; " class="d-flex justify-content-between  align-items-center text-center mb-3" >
-                    <h4 class="text-center align-items-center text-center"   style="  text-align: center; "> Member Comments </h4>
+    <h4 class="text-center align-items-center text-center"   style="  text-align: center; "> Member Comments </h4>
     </div>
     <!-- member Comment table -->
-  
+    <?php if($countComment > 0): ?>        
     <table class="table">
       <thead class="thead-dark">
         <tr>
@@ -239,38 +198,33 @@ body {
           <th scope="col">comment	</th>
           <th scope="col">Created at  </th>
           <th scope="col">By</th>
+          <?php if($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2): ?>
           <th scope="col">Actions</th>
+          <?php endif;?>
         </tr>
       </thead>
       <tbody>
         <?php 
-          $comments= true;
-          $i_com = 0;
-        while($commentRow = mysqli_fetch_assoc($getCommQuery)): 
-          $comments=  false ;
+        $i_com = 0;
+        while($commentRow = mysqli_fetch_assoc($getCommQuery)):
         ?>
         <tr>
           <th scope="row"><?=++$i_com;?></th>
           <td><?=$commentRow['comment']?></td>
           <td><?=date("j M, Y - g:i a", strtotime($commentRow['created_at']))?> </td>        
           <td><?= $commentRow['user_name']."[".$commentRow['agent_code']."]"?></td>
+          <?php if($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2): ?>
           <td>
-            <a href="<?=$commentRow['id']?>" class="btn btn-danger">X</a>
+            <a href="membership.profile.php?id= &delete_comment=<?= base64_encode($commentRow['id'])?>" class="btn btn-danger">X</a>
           </td>
+          <?php endif;?>
         </tr>
-        <?php endwhile;
-      if ($comments === true) {
-        echo "<div class='alert alert-info alert-dismissible fade show' role='alert'>
-            no comments added yet
-            <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
-              <span aria-hidden='true'>&times;</span>
-            </button>
-         </div>";
-          }
-        ?>
+        <?php endwhile;?>
       </tbody>
     </table>
- 
+    <?php else: ?>
+      <div class='alert alert-info alert-dismissible fade show' role='alert'>no comments added</div>
+    <?php endif;?>     
     <div style="  text-align: center; " class="d-flex justify-content-between  mb-3" >
         <h4 class="text-center"   style="  text-align: center; ">Latest Actions</h4>
     </div>

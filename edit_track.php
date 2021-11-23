@@ -3,6 +3,8 @@
   require_once("inc/nav.php");
   // check if session not set
   isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
+  // check if role is admin or manager
+  isAdminOrManager('Access Denied!','danger','index.php');
   // check if account is active
   isStatusActive();
   // did agent account approved
