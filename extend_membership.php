@@ -19,7 +19,6 @@
     $member_info_id = base64_decode($_GET['id']);
     $member_info_id = clean($member_info_id,'num');
 
-
     if(!validate($member_info_id,'num')){
       setMessage('Access Denied!','danger');
       redirectHeader('index.php');
@@ -140,32 +139,43 @@
                     
                 $today = date("Y-m-d G:i:s",strtotime('now'.' '.$currentTime)); 
                 $sessionUserId = $_SESSION['id'];
-                    
-                //INSERT membership_track
-                $sql = "INSERT INTO `membership_track` (`price`,`bill`,`start_date`,`end_date`,`user_id`,`member_id`,`updated_at`) ";
-                $sql .= "VALUES({$price},'{$bill}','{$final_start_date}','{$final_end_date}',{$sessionUserId},{$member_info_id},'{$today}')";
-                $query_member_track = mysqli_query($conn,$sql);
-                if($query_member_track){
-                  // INSER Comment if available
-                      if(validate($comment,'empty')){
-                        $member_track_id = intval(mysqli_insert_id($conn));
-                        $sql = "INSERT INTO `comments` (`comment`,`user_id`,`member_id`) ";
-                        $sql .= "VALUES ('{$comment}',{$sessionUserId},{$member_info_id})";
-                        $query_comment = mysqli_query($conn,$sql);
-                        if($query_comment){
+                 
+
+
+                // deactivate all older status
+                $sql = "SELECT `id` FROM `membership_track` WHERE `member_id` = {$member_info_id} ORDER BY `id` DESC";
+                $query = mysqli_query($conn,$sql);
+                $id    = [];
+                while($ids = mysqli_fetch_assoc($query)){$id[] = $ids['id'];}
+                $old   = implode(',',$id);
+                $sql   = "UPDATE `membership_track` SET `status` = 0 WHERE `id` IN ({$old}) ";
+                $query = mysqli_query($conn,$sql);
+                if($query){
+                      //INSERT membership_track
+                      $sql = "INSERT INTO `membership_track` (`price`,`bill`,`start_date`,`end_date`,`user_id`,`member_id`,`updated_at`) ";
+                      $sql .= "VALUES({$price},'{$bill}','{$final_start_date}','{$final_end_date}',{$sessionUserId},{$member_info_id},'{$today}')";
+                      $query_member_track = mysqli_query($conn,$sql);
+                      if($query_member_track){          
+                        // INSER Comment if available
+                        if(validate($comment,'empty')){
+                          $member_track_id = intval(mysqli_insert_id($conn));
+                          $sql = "INSERT INTO `comments` (`comment`,`user_id`,`member_id`) ";
+                          $sql .= "VALUES ('{$comment}',{$sessionUserId},{$member_info_id})";
+                          $query_comment = mysqli_query($conn,$sql);
+                          if($query_comment){
+                            
+                            setMessage("Member Added Successfully!",'success');
+                            redirectHeader('index.php');
+                          }else{                                
+                            $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
+                          }
+                        }else{
                           setMessage("Member Added Successfully!",'success');
-                          redirectHeader('index.php');
-                        }else{                                
-                          $sql = "DELETE FROM `membership_track` WHERE `id` = {$member_track_id} LIMIT 1";
-                          mysqli_query($conn,$sql);
-                          $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
+                          redirectHeader('index.php'); 
                         }
                       }else{
-                        setMessage("Member Added Successfully!",'success');
-                        redirectHeader('index.php'); 
+                        $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
                       }
-                }else{
-                  $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
                 }
           }
       }
