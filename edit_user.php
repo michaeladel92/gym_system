@@ -146,19 +146,32 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                   if(in_array(strtolower($userRow['email']),$vipEmails)){
                     setMessage("Permission Not Allowed!",'warning');
                     redirectHeader('dashboard.php'); 
+                  }elseif($_SESSION['role_id'] >= $userRow['role_id'] ){
+                    setMessage("Permission Not Allowed!",'warning');
+                    redirectHeader('dashboard.php'); 
                   }
                 }
+              // make sure that vip emails cant be changed by individuals
+              if($email !== $userRow['email'] && in_array(strtolower($userRow['email']),$vipEmails)){
+                setMessage("Permission Not Allowed!",'warning');
+                redirectHeader('dashboard.php'); 
+              }
               }else{
                 if($status === 0 ){
                   setMessage("Permission Not Allowed!",'warning');
                   redirectHeader('dashboard.php'); 
                 }
+               
               }
+
 
               // VIP Roles UNDER Grade - Not Allowed
               if($_SESSION['role_id'] === 1){
-                if(intval($role) !== 1){
+                if(intval($role) > 1){
                   if(in_array(strtolower($userRow['email']),$vipEmails)){
+                    setMessage("Permission Not Allowed!",'warning');
+                    redirectHeader('dashboard.php'); 
+                  }elseif($_SESSION['id'] === intval($userRow['id'])){
                     setMessage("Permission Not Allowed!",'warning');
                     redirectHeader('dashboard.php'); 
                   }
