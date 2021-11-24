@@ -98,25 +98,26 @@ if(!isset($_GET['id']) || $_GET['id'] === '' ){
                       `comments`.`created_at` DESC";
   $getCommQuery = mysqli_query($conn,$sql_comm);
   $countComment = mysqli_num_rows($getCommQuery);
+  if($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2){
   // Latest Update
-  $sql_update = "  SELECT 
-                      `member_user`.*, 
-                    
-                      `users`.`full_name` AS `user_name`,
-                      `users`.`agent_code`
-                    FROM
-                      `member_user`
+    $sql_update = "  SELECT 
+                        `member_user`.*, 
+                      
+                        `users`.`full_name` AS `user_name`,
+                        `users`.`agent_code`
+                      FROM
+                        `member_user`
 
-                    INNER JOIN
-                      `users`
-                    ON
-                      `users`.`id` = `member_user`.`user_id`
-                    WHERE
-                      `member_user`.`member_id` = $member_id
-                    ORDER BY 
-                      `member_user`.`created_at` DESC";
-  $getUpdateQuery = mysqli_query($conn,$sql_update);
-  
+                      INNER JOIN
+                        `users`
+                      ON
+                        `users`.`id` = `member_user`.`user_id`
+                      WHERE
+                        `member_user`.`member_id` = $member_id
+                      ORDER BY 
+                        `member_user`.`created_at` DESC";
+    $getUpdateQuery = mysqli_query($conn,$sql_update);
+  }
 
   $greenCircle ="<span style='width: 0.5rem;height: 0.5rem;background-color: green;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px green;'></span>";
   $yellowCircle = "<span style='width: 0.5rem;height: 0.5rem;background-color: #d7d72c;display: inline-block;border-radius: 50%;box-shadow: 0 0 5px 0.5px #d7d72c;'></span>";
@@ -146,6 +147,7 @@ body{background:#632778}.form-control:focus{box-shadow:none;border-color:#ba68c8
    
     <div class="row">
             <div class="col-md-12 border-right">
+            <?php if( isset($_SESSION['message'])){displayMessage();}?>
             <div class="p-3 py-5">
             <div style="  text-align: center; " class="d-flex justify-content-between  mb-3" >
                     <h4 class="text-center"   style="  text-align: center; "> Member Tracks </h4>
@@ -247,9 +249,11 @@ body{background:#632778}.form-control:focus{box-shadow:none;border-color:#ba68c8
     <?php else: ?>
       <div class='alert alert-info alert-dismissible fade show' role='alert'>no comments added</div>
     <?php endif;?>     
+    <?php if($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2): ?>
     <div style="  text-align: center; " class="d-flex justify-content-between  mb-3" >
         <h4 class="text-center"   style="  text-align: center; ">Latest Actions</h4>
     </div>
+  
   <!-- Latest Actions -->
   <table class="table offset-md-3 col-md-6">
       <thead class="thead-dark">
@@ -272,6 +276,7 @@ body{background:#632778}.form-control:focus{box-shadow:none;border-color:#ba68c8
         <?php endwhile;?>
       </tbody>
     </table>
+    <?php endif; ?>
         </div>
         </div>
     </div>

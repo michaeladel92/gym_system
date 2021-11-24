@@ -30,11 +30,7 @@
   if($_SERVER['REQUEST_METHOD'] === "POST"){
       if(isset($_POST['extend_member'])){
         $messages    = [];
-     
-    
         $comment     = clean($_POST['comments'],'string');
-
-       
 
           // validate Comment
           if(validate($comment,'empty')){
@@ -52,25 +48,33 @@
             }
           }
           else{
-        
-      
-                    
-             
-                
+            $sessionUserId = $_SESSION['id'];
+            $location = "membership_profile.php?id=".base64_encode($member_info_id);
                   // INSER Comment 
                       if(validate($comment,'empty')){
-                        $member_track_id = intval(mysqli_insert_id($conn));
                         $sql = "INSERT INTO `comments` (`comment`,`user_id`,`member_id`) ";
-                        $sql .= "VALUES ('{$comment}',{$_SESSION['id']},{$member_info_id})";
+                        $sql .= "VALUES ('{$comment}',{$sessionUserId},{$member_info_id})";
                         $query_comment = mysqli_query($conn,$sql);
    
                         if($query_comment){
-                          setMessage("comment Added Successfully!",'success');
-                          redirectHeader('index.php');
-                     
+                          $comm_id = intval(mysqli_insert_id($conn));
+
+                            //INSERT membership_user
+                            $sql = "INSERT INTO `member_user` (`user_id`,`member_id`) ";
+                            $sql .= "VALUES({$sessionUserId},{$member_info_id})";
+                            $query_member_user = mysqli_query($conn,$sql);
+                            if($query_member_user){
+                              setMessage("comment Added Successfully!",'success');
+                              redirectHeader($location);
+                            }else{
+                              $sql = "DELETE FROM `comments` WHERE `id` = {$comm_id} LIMIT 1";
+                              mysqli_query($conn,$sql);
+                              setMessage("Oops, Something went Wrong, Please try again!",'danger');
+                              redirectHeader($location); 
+                            }
                       }else{
-                        setMessage("error!",'danger');
-                        redirectHeader('index.php'); 
+                        setMessage("Oops, Something went Wrong, Please try again!",'danger');
+                        redirectHeader($location); 
                       }
                     }
           }

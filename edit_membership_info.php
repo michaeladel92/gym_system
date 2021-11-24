@@ -86,7 +86,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           }
         }
         else{
-         
+          $location = "membership_profile.php?id=".base64_encode($member_info_id);
           // check if phone exist in db
           $sql = "SELECT `phone` FROM `membership_info` WHERE `phone` = '{$phone}' AND `id` != {$member_id}";
           $query_check_phone = mysqli_query($conn,$sql);
@@ -118,7 +118,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                               $query_comment = mysqli_query($conn,$sql);
                               if($query_comment){
                                 setMessage("Member Info Updated Successfully!",'success');
-                                redirectHeader('index.php');
+                                redirectHeader($location);
                               }else{                                
                                 $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
                               }
@@ -133,12 +133,11 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                               $query_comment = mysqli_query($conn,$sql);
                               if($query_comment){
                                 setMessage("Member Info Updated Successfully!",'success');
-                                redirectHeader('index.php');
+                                redirectHeader($location);
                               }else{                                
                                 $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
                               }
                             }
-                  
                   }else{
                     $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
                   }  

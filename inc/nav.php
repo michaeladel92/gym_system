@@ -20,6 +20,7 @@
               <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/dashboard.php">Dashboard</a>
               <?php if($_SESSION['role_id'] === 1): ?>
                 <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/add_user.php">Add agent</a>
+                <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/list_tracks.php">Member Tracks</a>
                 <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/roles/index.php">Roles</a>
 
             <?php 
@@ -37,9 +38,6 @@
         </li>
         <li class="nav-item">
           <a class="nav-link" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/index.php">Members</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/list_tracks.php">all tracks</a>
         </li>
       </ul>
     </div>

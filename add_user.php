@@ -87,7 +87,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
               $query_user = mysqli_query($conn,$sql);
               if($query_user){
                 setMessage("User Added Successfully!",'success');
-                redirectHeader('add_user.php'); 
+                redirectHeader('dashboard.php'); 
               }else{
                 $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
 
