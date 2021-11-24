@@ -38,6 +38,9 @@
         <li class="nav-item">
           <a class="nav-link" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/index.php">Members</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/list_tracks.php">all tracks</a>
+        </li>
       </ul>
     </div>
     <?php endif; ?>

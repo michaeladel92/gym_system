@@ -1,0 +1,135 @@
+<?php
+  require("inc/init.php");
+  require_once("inc/nav.php");
+  // check if session not set
+  isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
+  // check if role is admin or manager
+  isAdminOrManager('Access Denied!','danger','index.php');
+  // check if account is active
+  isStatusActive();
+  // did agent account approved
+  isUserApproved("Access Denied!, Please change you're password to active your Account!",'danger');
+  
+  // get id
+  if(!isset($_GET['id']) || $_GET['id'] === '' ){
+    setMessage('Access Denied!','danger');
+    redirectHeader('index.php');
+
+  }else{
+    // decode id
+    $member_info_id = base64_decode($_GET['id']);
+    $member_info_id = clean($member_info_id,'num');
+ 
+    if(!validate($member_info_id,'num')){
+      setMessage('Access Denied!','danger');
+      redirectHeader('index.php');
+    }
+  }
+
+  $notifications = [];
+if($_SERVER['REQUEST_METHOD'] === "POST"){
+    if(isset($_POST['update_info'])){
+      $messages    = [];
+      $pass        = $_POST['pass'];
+   
+
+    
+          //validate name
+        if(!validate($pass,'empty')){
+          $messages[] = 'Please Enter password!';  
+        }
+      
+       
+        // count message
+        if(count($messages) > 0){
+          foreach($messages as $msg){
+            $notifications[] = "<div class='alert alert-danger' role='alert'>$msg</div>";
+          }
+        }
+        else{
+         
+           // check if email exist in db
+           $sql = "SELECT * FROM `users` WHERE `id` = '{$_SESSION['id']}' LIMIT 1";
+           $query_check_pass = mysqli_query($conn,$sql);
+           $row = mysqli_fetch_assoc($query_check_pass);
+         
+             
+   
+               
+                  
+          
+         if(!password_verify($pass,$row['password'])){
+
+          
+          $notifications[] = "<div class='alert alert-danger' role='alert'>Incorrect Entry password!</div>";
+        }else{
+                
+          $sql =  "UPDATE `membership_track` SET status=0 WHERE  `member_id`={$member_info_id}";
+          $op  = mysqli_query($conn,$sql);
+    
+         $sql = "DELETE FROM `membership_info` WHERE `id` = {$member_info_id} LIMIT 1";
+         $del_query = mysqli_query($conn,$sql);
+         if($del_query){
+     
+
+         setMessage("Row Deleted Successfully!",'success');
+         redirectHeader('index.php');
+    
+          }else{
+              setMessage("Row Not Found!",'danger');
+              redirectHeader('index.php');
+          }
+                  
+          }
+        }
+    }
+}  
+
+
+?>
+<style>
+  /* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>
+ <div class="container mt-5">
+ <div class="offset-md-3 col-md-6">
+      <form actions="<?php $_SERVER["PHP_SELF"];?>" method="POST">
+        <div class="form-row">
+        <h5 class="m-3">Are your Sure you want to Delete </h5>
+
+          <div class="form-group col-md-6">
+            <!-- name -->
+            <label for="inputEmail4">enter password for <?php  echo $_SESSION['full_name'];?></label>
+            <input name="pass" type="password" class="form-control" id="inputEmail4">
+           
+          </div>
+        
+  
+        </div>
+        <?php 
+          if( isset($_SESSION['message'])){
+            displayMessage();
+          }
+          // err msg
+          if(count($notifications) > 0){
+              echo $notifications[0];
+          }
+        ?>
+         <button type="submit" name="update_info" class="btn btn-success">Yes</button>
+                    <a href="membership_profile.php" class="btn btn-danger">No</a>
+      
+      </form>
+    </div>
+</div>
+
+<?php
+require_once('inc/footer.php');
