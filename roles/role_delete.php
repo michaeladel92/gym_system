@@ -21,6 +21,11 @@ isUserApproved("Access Denied!, Please change you're password to active your Acc
     // decode id
     $role_id = base64_decode($_GET['id']);
     $role_id = clean($role_id,'num');
+    $notAllow = [1,2,3];
+    if(in_array($role_id,$notAllow)){
+      setMessage('Not allowed to delete this row!','danger');
+      redirectHeader('index.php');
+    }
 
     if(!validate($role_id,'num')){
       setMessage('Access Denied!','danger');

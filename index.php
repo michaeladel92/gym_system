@@ -161,7 +161,7 @@
         <?php while($memberLists = mysqli_fetch_assoc($getMembersQuery)): ?>
             <tr>
               <th scope="row"><a href="membership_profile.php?id=<?=base64_encode($memberLists['id'])?>"><?=$memberLists['full_name']?></a></th>
-              <td><?=$memberLists['phone']?></td>
+              <td><?=implode('-',str_split($memberLists['phone'],3))?></td>
               <td><?=date("j M, Y", strtotime($memberLists['start_date']))?></td>
               <td><?=date("j M, Y", strtotime($memberLists['end_date']))?></td>
               <td ><?=$memberLists['agent_name'] .' ['.$memberLists['agent_code']. ']'?></td>
