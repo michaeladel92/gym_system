@@ -1,10 +1,10 @@
 <?php
-  require("inc/init.php");
-  require_once("inc/nav.php");
+  require("../inc/init.php");
+  require_once("../inc/nav.php");
   // check if session not set
-  isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
+  isSessionIdNotAvailable('Please login to procceed!','danger','../login.php');
   // check if role is admin or manager
-  isAdminOrManager('Access Denied!','danger','index.php');
+  isAdminOrManager('Access Denied!','danger','../index.php');
   // check if account is active
   isStatusActive();
   // did agent account approved
@@ -13,7 +13,7 @@
   // get id
   if(!isset($_GET['id']) || $_GET['id'] === '' ){
     setMessage('Access Denied!','danger');
-    redirectHeader('index.php');
+    redirectHeader('../index.php');
 
   }else{
     // decode id
@@ -23,7 +23,7 @@
 
     if(!validate($member_info_id,'num')){
       setMessage('Access Denied!','danger');
-      redirectHeader('index.php');
+      redirectHeader('../index.php');
     }
   }
 
@@ -63,7 +63,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
           $del_query = mysqli_query($conn,$sql);
           if($del_query){
             setMessage("Membership Canceled Successfully!",'success');
-            redirectHeader('index.php');
+            redirectHeader('../index.php');
           }else{
               setMessage("Oops, Something Went Wrong, Please try again!",'danger');
               redirectHeader($location);
@@ -119,4 +119,4 @@ input[type=number] {
 </div>
 
 <?php
-require_once('inc/footer.php');
+require_once('../inc/footer.php');

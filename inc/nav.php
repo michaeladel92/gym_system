@@ -15,12 +15,12 @@
             <?=$_SESSION['full_name']."[".$_SESSION['agent_code']."]"?>
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/edit_user.php?id=<?=base64_encode($_SESSION['id'])?>">Edit</a>
+            <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/agents/edit_user.php?id=<?=base64_encode($_SESSION['id'])?>">Edit</a>
             <?php if($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2): ?>
-              <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/dashboard.php">Dashboard</a>
+              <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/agents/dashboard.php">Dashboard</a>
               <?php if($_SESSION['role_id'] === 1): ?>
-                <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/add_user.php">Add agent</a>
-                <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/list_tracks.php">Member Tracks</a>
+                <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/agents/add_user.php">Add agent</a>
+                <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/members/list_tracks.php">Member Tracks</a>
                 <a class="dropdown-item" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/roles/index.php">Roles</a>
 
             <?php 
@@ -34,7 +34,7 @@
         </li>
         <!-- active -->
         <li class="nav-item ">
-          <a class="nav-link" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/add_membership.php">New Membership</a>
+          <a class="nav-link" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/members/add_membership.php">New Membership</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="http://<?=$_SERVER['HTTP_HOST']?>/gym/index.php">Members</a>

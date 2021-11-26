@@ -14,7 +14,9 @@ if(isset($_GET['logout']) && $_GET['logout'] === 'true'  ){
     unset($_SESSION['is_approved']);
     unset($_SESSION['role_id']);
     setMessage('Logged Out!','success');
-    redirectHeader('login.php');
+    $host = $_SERVER['HTTP_HOST'];
+    $path = "http://$host/gym/login.php";
+    redirectHeader($path);
   }
 }
 require_once('header.php');

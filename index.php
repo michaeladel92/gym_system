@@ -160,14 +160,14 @@
       <tbody>
         <?php while($memberLists = mysqli_fetch_assoc($getMembersQuery)): ?>
             <tr>
-              <th scope="row"><a href="membership_profile.php?id=<?=base64_encode($memberLists['id'])?>"><?=$memberLists['full_name']?></a></th>
+              <th scope="row"><a href="members/membership_profile.php?id=<?=base64_encode($memberLists['id'])?>"><?=$memberLists['full_name']?></a></th>
               <td><?=implode('-',str_split($memberLists['phone'],3))?></td>
               <td><?=date("j M, Y", strtotime($memberLists['start_date']))?></td>
               <td><?=date("j M, Y", strtotime($memberLists['end_date']))?></td>
               <td ><?=$memberLists['agent_name'] .' ['.$memberLists['agent_code']. ']'?></td>
               <td><?=date("j M, Y - g:i a", strtotime($memberLists['updated_at']))?></td>
               <td>
-                <a href="extend_membership.php?id=<?=base64_encode($memberLists['id'])?>" type="button" class="btn btn-dark">extend</a>
+                <a href="members/extend_membership.php?id=<?=base64_encode($memberLists['id'])?>" type="button" class="btn btn-dark">extend</a>
               </td>
             </tr>
         <?php endwhile; ?>

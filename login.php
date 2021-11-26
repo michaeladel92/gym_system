@@ -52,7 +52,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                   //need to change password 
                     if($_SESSION['is_approved'] === 0){
                       setMessage("Please Change Your Password to be able to procceed!",'warning');
-                      $editLink = "edit_user.php?id=".base64_encode($_SESSION['id']);
+                      $editLink = "agents/edit_user.php?id=".base64_encode($_SESSION['id']);
                       redirectHeader($editLink); 
                     }else{
                       setMessage("Logged In Successfully!",'success');

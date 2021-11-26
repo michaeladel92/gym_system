@@ -1,10 +1,10 @@
 <?php
-  require("inc/init.php");
-  require_once("inc/nav.php");
+  require("../inc/init.php");
+  require_once("../inc/nav.php");
   // Session not available 
-  isSessionIdNotAvailable('Please Login to procceed!','danger','login.php');
+  isSessionIdNotAvailable('Please Login to procceed!','danger','../login.php');
   // check if role is admin or manager
-  isAdminOrManager('Access Denied!','danger','index.php');
+  isAdminOrManager('Access Denied!','danger','../index.php');
   // check if account is active
   isStatusActive();
 
@@ -237,7 +237,7 @@
       <tbody>
         <?php while($memberRow = mysqli_fetch_assoc($query_memberTrack)): ?>
         <tr>
-          <th scope="row"><a href="membership_profile.php?id=<?= base64_encode($memberRow['member_id'])?>"><?=$memberRow['member_name']?></a></th>
+          <th scope="row"><a href="../members/membership_profile.php?id=<?= base64_encode($memberRow['member_id'])?>"><?=$memberRow['member_name']?></a></th>
           <td><?=$memberRow['bill']?></td>
           <td><?= number_format($memberRow['price']);?>
           </td>
@@ -270,7 +270,7 @@
           </td>
         </td>
           <td>
-            <a href="edit_track.php?id=<?= base64_encode($memberRow['id'])?>" class="btn btn-dark">Edit</a>
+            <a href="../members/edit_track.php?id=<?= base64_encode($memberRow['id'])?>" class="btn btn-dark">Edit</a>
           </td>
         </tr>
         <?php endwhile; ?>
@@ -297,7 +297,7 @@
       <tbody>
         <?php while($commentRow = mysqli_fetch_assoc($getCommQuery)): ?>
         <tr>
-          <th scope="row"><a href="membership_profile.php?id=<?= base64_encode($commentRow['member_id'])?>"><?=$commentRow['member_name']?></a></th>
+          <th scope="row"><a href="../members/membership_profile.php?id=<?= base64_encode($commentRow['member_id'])?>"><?=$commentRow['member_name']?></a></th>
           <td><?=$commentRow['comment']?></td>
           <td><?=date("j M, Y - g:i a", strtotime($commentRow['created_at']))?> </td>        
           <td><?= $commentRow['user_name']."[".$commentRow['agent_code']."]"?></td>
@@ -314,4 +314,4 @@
 </div>
 
 <?php
-require_once('inc/footer.php');
+require_once('../inc/footer.php');

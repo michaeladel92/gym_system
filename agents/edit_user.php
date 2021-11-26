@@ -1,12 +1,12 @@
 <?php
-  require("inc/init.php");
-  require_once("inc/nav.php");
+  require("../inc/init.php");
+  require_once("../inc/nav.php");
   // session not available
-  isSessionIdNotAvailable('Access Denied, please login to procceed!','danger','login.php');
+  isSessionIdNotAvailable('Access Denied, please login to procceed!','danger','../login.php');
   // check if account is active
   isStatusActive();
   // redirect
-  $location = ($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2 ? 'dashboard.php' : 'index.php'); 
+  $location = ($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2 ? 'dashboard.php' : '../index.php'); 
   $sessionUserId = $_SESSION['id'];
   //input readonly 
   $readOnlyAttribute = ($_SESSION['role_id'] === 1  ? "" : "readonly");
@@ -252,7 +252,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
                 unset($_SESSION['is_approved']);
                 unset($_SESSION['role_id']);
                 setMessage("Password Updated Successfully, Please log in to procceed!",'success');
-                redirectHeader('login.php'); 
+                redirectHeader('../login.php'); 
 
               }else{
                 $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
@@ -342,5 +342,5 @@ if($_SERVER['REQUEST_METHOD'] === "POST"){
 </div>
 
 <?php
-require_once('inc/footer.php');
+require_once('../inc/footer.php');
 

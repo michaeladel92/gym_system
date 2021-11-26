@@ -1,10 +1,10 @@
 <?php
-  require("inc/init.php");
-  require_once("inc/nav.php");
+  require("../inc/init.php");
+  require_once("../inc/nav.php");
     // Session not available 
-    isSessionIdNotAvailable('Please Login to procceed!','danger','login.php');
+    isSessionIdNotAvailable('Please Login to procceed!','danger','../login.php');
     // check if role is admin
-    isAdmin('Access Denied!','danger','index.php');
+    isAdmin('Access Denied!','danger','../index.php');
     // check if account is active
     isStatusActive();
     // did agent account approved
@@ -159,4 +159,4 @@
 </div>
 
 <?php
-require_once('inc/footer.php');
+require_once('../inc/footer.php');

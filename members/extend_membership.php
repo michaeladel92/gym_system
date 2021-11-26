@@ -1,9 +1,9 @@
 <?php
-  require("inc/init.php");
-  require_once("inc/nav.php");
+  require("../inc/init.php");
+  require_once("../inc/nav.php");
 
   // check if session not set
-  isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
+  isSessionIdNotAvailable('Please login to procceed!','danger','../login.php');
   // check if account is active
   isStatusActive();
   // did agent account approved
@@ -12,7 +12,7 @@
   // get id
   if(!isset($_GET['id']) || $_GET['id'] === '' ){
     setMessage('Access Denied!','danger');
-    redirectHeader('index.php');
+    redirectHeader('../index.php');
 
   }else{
     // decode id
@@ -21,7 +21,7 @@
 
     if(!validate($member_info_id,'num')){
       setMessage('Access Denied!','danger');
-      redirectHeader('index.php');
+      redirectHeader('../index.php');
     }else{
       $sql = "SELECT 
                     `membership_info`.*,
@@ -49,7 +49,7 @@
       $count = mysqli_num_rows($getMembersQuery);
       if($count === 0){
         setMessage('Member Not found!','danger');
-        redirectHeader('index.php');
+        redirectHeader('../index.php');
       }else{
         $MemberRow = mysqli_fetch_assoc($getMembersQuery); 
       }
@@ -66,6 +66,7 @@
         $subscribe   = $_POST['subscribe'];
         $price       = clean($_POST['price'],'num');
         $price       = intval($price);
+        $price       = abs($price);
         $bill        = clean($_POST['bill'],'string');
         $currentTime = date("G:i:s",strtotime('now'));
         $yesterday   = date("Y-m-d",strtotime('yesterday'));
@@ -165,13 +166,13 @@
                           if($query_comment){
                             
                             setMessage("Member Added Successfully!",'success');
-                            redirectHeader('index.php');
+                            redirectHeader('../index.php');
                           }else{                                
                             $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
                           }
                         }else{
                           setMessage("Member Added Successfully!",'success');
-                          redirectHeader('index.php'); 
+                          redirectHeader('../index.php'); 
                         }
                       }else{
                         $notifications[] = "<div class='alert alert-danger' role='alert'>Oops, Something went Wrong, Please try again!</div>";
@@ -278,4 +279,4 @@ input[type=number] {
 </div>
 
 <?php
-require_once('inc/footer.php');
+require_once('../inc/footer.php');

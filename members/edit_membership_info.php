@@ -1,10 +1,10 @@
 <?php
-  require("inc/init.php");
-  require_once("inc/nav.php");
+  require("../inc/init.php");
+  require_once("../inc/nav.php");
   // check if session not set
-  isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
+  isSessionIdNotAvailable('Please login to procceed!','danger','../login.php');
   // check if role is admin or manager
-  isAdminOrManager('Access Denied!','danger','index.php');
+  isAdminOrManager('Access Denied!','danger','../index.php');
   // check if account is active
   isStatusActive();
   // did agent account approved
@@ -13,7 +13,7 @@
   // get id
   if(!isset($_GET['id']) || $_GET['id'] === '' ){
     setMessage('Access Denied!','danger');
-    redirectHeader('index.php');
+    redirectHeader('../index.php');
 
   }else{
     // decode id
@@ -22,14 +22,14 @@
  
     if(!validate($member_info_id,'num')){
       setMessage('Access Denied!','danger');
-      redirectHeader('index.php');
+      redirectHeader('../index.php');
     }else{
       $sql = "SELECT * FROM `membership_info` WHERE `id` = {$member_info_id}";
       $getMembersQuery = mysqli_query($conn,$sql);
       $count = mysqli_num_rows($getMembersQuery);
       if($count === 0){
         setMessage('Member Not found!','danger');
-        redirectHeader('index.php');
+        redirectHeader('../index.php');
       }else{
         $MemberRow = mysqli_fetch_assoc($getMembersQuery); 
     
@@ -203,4 +203,4 @@ input[type=number] {
 </div>
 
 <?php
-require_once('inc/footer.php');
+require_once('../inc/footer.php');

@@ -1,8 +1,8 @@
 <?php
-  require("inc/init.php");
-  require_once("inc/nav.php");
+  require("../inc/init.php");
+  require_once("../inc/nav.php");
   // check if session not set
-  isSessionIdNotAvailable('Please login to procceed!','danger','login.php');
+  isSessionIdNotAvailable('Please login to procceed!','danger','../login.php');
   // check if account is active
   isStatusActive();
   // did agent account approved
@@ -13,17 +13,17 @@
     // DELETE CCOMMENT
     if(isset($_GET['delete_comment']) && $_GET['delete_comment'] !== ''){
       // check if role is admin or manager
-      isAdminOrManager('Access Denied!','danger','index.php');
+      isAdminOrManager('Access Denied!','danger','../index.php');
       $com_id = base64_decode($_GET['delete_comment']);
       $com_id = clean($com_id,'num');
       $sql   = "DELETE FROM `comments` WHERE `id` = $com_id LIMIT 1";
       $query = mysqli_query($conn,$sql);
       if($query){
         setMessage('Comment Deleted!','success');
-        redirectHeader('index.php');
+        redirectHeader('../index.php');
       }else{
         setMessage('Oops, Something went wrong please try again!','danger');
-        redirectHeader('index.php');
+        redirectHeader('../index.php');
       }
     }
 }
@@ -33,7 +33,7 @@
   // get id
 if(!isset($_GET['id']) || $_GET['id'] === '' ){
   setMessage('Access Denied!','danger');
-  redirectHeader('index.php');
+  redirectHeader('../index.php');
 
 }else{
   // decode id
@@ -43,7 +43,7 @@ if(!isset($_GET['id']) || $_GET['id'] === '' ){
 
   if(!validate($member_id,'num')){
     setMessage('Access Denied!','danger');
-    redirectHeader('index.php');
+    redirectHeader('../index.php');
   }else{
     
     $sql_info = "SELECT * FROM `membership_info` WHERE `id` = $member_id LIMIT 1";
@@ -51,7 +51,7 @@ if(!isset($_GET['id']) || $_GET['id'] === '' ){
     $count = mysqli_num_rows($getInfoQuery);
     if($count === 0){
       setMessage('Member Info Not found!','danger');
-      redirectHeader('index.php');
+      redirectHeader('../index.php');
     }else{
       $member_info = mysqli_fetch_assoc($getInfoQuery); 
     }
@@ -289,4 +289,4 @@ body{background:#632778}.form-control:focus{box-shadow:none;border-color:#ba68c8
 </div>
 
 <?php
-require_once('inc/footer.php');
+require_once('../inc/footer.php');
